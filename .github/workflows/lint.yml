@@ -1,0 +1,64 @@
+# GitHub Actions workflow for Go linting
+name: Lint
+
+# Run on pull requests and pushes to main
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+# Cancel in-progress runs for the same workflow and branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Permissions required for the workflow
+permissions:
+  contents: read
+  # Required for golangci-lint to post PR comments
+  pull-requests: read
+  checks: write
+
+jobs:
+  golangci-lint:
+    name: golangci-lint
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Set up Go environment
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 'stable' # Use latest stable Go version
+          cache: false # golangci-lint-action has its own cache
+
+      # Step 3: Set up Bun for building frontend assets
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      # Step 4: Install frontend dependencies
+      - name: Install frontend dependencies
+        run: cd web && bun install
+
+      # Step 5: Build frontend assets
+      - name: Build frontend assets
+        run: go generate
+
+      # Step 6: Run golangci-lint
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v8
+        with:
+          # Version of golangci-lint to use (v2.5.0+ supports Go 1.25)
+          version: v2.5.0
+          # Optional: show only new issues if it's a pull request
+          only-new-issues: ${{ github.event_name == 'pull_request' }}
+          # Optional: golangci-lint command line arguments
+          args: --timeout=5m --config=.golangci.yml

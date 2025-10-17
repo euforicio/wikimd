@@ -1,0 +1,44 @@
+/* Solarized Dark Theme - Classic low-contrast dark theme */
+:root {
+  /* Solarized Dark color palette */
+  --color-bg-primary: #002b36;    /* base03 */
+  --color-bg-secondary: #073642;  /* base02 */
+  --color-bg-tertiary: #094553;
+  --color-bg-code: #073642;
+  --color-bg-elevated: #094553;
+
+  /* Solarized text colors */
+  --color-text-primary: #839496;  /* base0 */
+  --color-text-secondary: #93a1a1; /* base1 */
+  --color-text-muted: #586e75;    /* base01 */
+  --color-text-link: #268bd2;     /* blue */
+  --color-text-code: #2aa198;     /* cyan */
+
+  /* Solarized borders */
+  --color-border: #073642;
+  --color-border-dark: #002b36;
+  --color-border-light: #094553;
+
+  /* Solarized accent colors */
+  --color-accent: #268bd2;        /* blue */
+  --color-accent-hover: #2aa198;  /* cyan */
+  --color-success: #859900;       /* green */
+  --color-warning: #b58900;       /* yellow */
+  --color-error: #dc322f;         /* red */
+
+  /* Sidebar */
+  --color-sidebar-bg: #073642;
+  --color-sidebar-text: #839496;
+  --color-sidebar-hover: #094553;
+  --color-sidebar-active: #268bd2;
+
+  /* Code blocks */
+  --code-bg: #073642;
+  --code-border: rgba(88, 110, 117, 0.3);
+  --code-text: #93a1a1;
+
+  /* Subtle shadows for Solarized */
+  --shadow-sm: 0 1px 3px rgba(0, 43, 54, 0.5);
+  --shadow-md: 0 4px 6px rgba(0, 43, 54, 0.4);
+  --shadow-lg: 0 10px 25px rgba(0, 43, 54, 0.6);
+}

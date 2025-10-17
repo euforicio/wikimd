@@ -1,0 +1,53 @@
+{{ define "page" }}
+<div class="flex flex-col lg:flex-row gap-10" data-current-path="{{ .Path }}">
+  <article id="page-view" class="prose prose-invert max-w-none w-full min-w-0">
+    {{ if .Breadcrumbs }}
+      <nav aria-label="Breadcrumb" class="mb-6 text-xs uppercase tracking-wide text-slate-500">
+        <ol class="flex flex-wrap gap-2 items-center">
+          {{ range $index, $crumb := .Breadcrumbs }}
+            {{ if gt $index 0 }}<li class="opacity-40">/</li>{{ end }}
+            <li class="flex items-center gap-2">
+              {{ if $crumb.URL }}
+                <a href="{{ $crumb.URL }}" class="text-slate-400 hover:text-slate-200">{{ $crumb.Title }}</a>
+              {{ else }}
+                <span class="text-slate-500">{{ $crumb.Title }}</span>
+              {{ end }}
+            </li>
+          {{ end }}
+        </ol>
+      </nav>
+    {{ end }}
+    {{ .HTML }}
+  </article>
+  <aside id="page-meta" class="lg:w-64 xl:w-72 shrink-0 space-y-4">
+    <div class="rounded-2xl border border-surface-border bg-surface-subtle/60 p-5 shadow-card">
+      <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-400">Document</h2>
+      <p class="mt-3 text-base font-semibold text-slate-100">{{ if .Title }}{{ .Title }}{{ else }}Untitled Document{{ end }}</p>
+      <dl class="mt-4 space-y-2 text-sm text-slate-400">
+        <div class="flex items-center justify-between">
+          <dt>Last updated</dt>
+          <dd class="text-slate-300">{{ formatTime .Modified }}</dd>
+        </div>
+        {{ if hasMetadata .Metadata }}
+          {{ if .Metadata.Description }}
+            <div>
+              <dt class="text-xs uppercase tracking-wide text-slate-500">Summary</dt>
+              <dd class="mt-1 text-slate-300">{{ .Metadata.Description }}</dd>
+            </div>
+          {{ end }}
+          {{ if .Metadata.Tags }}
+            <div>
+              <dt class="text-xs uppercase tracking-wide text-slate-500 mb-1">Tags</dt>
+              <dd class="flex flex-wrap gap-2">
+                {{ range .Metadata.Tags }}
+                  <span class="badge badge-outline badge-sm">{{ . }}</span>
+                {{ end }}
+              </dd>
+            </div>
+          {{ end }}
+        {{ end }}
+      </dl>
+    </div>
+  </aside>
+</div>
+{{ end }}

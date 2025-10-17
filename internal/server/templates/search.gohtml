@@ -1,0 +1,35 @@
+{{ define "search" }}
+<div class="space-y-5 px-6 py-6" data-query="{{ .Query }}">
+  {{ if .Query }}
+    <div class="flex flex-wrap items-center justify-between gap-2">
+      <h2 class="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500/80">Results for “{{ .Query }}”</h2>
+      <span class="text-xs text-slate-500">{{ .Count }} match{{ if ne .Count 1 }}es{{ end }}</span>
+    </div>
+    {{ if gt .Count 0 }}
+      <ul class="space-y-3">
+        {{ range .Results }}
+          <li>
+            <button type="button"
+                    class="search-result text-left w-full"
+                    hx-get="/api/page/{{ .Path }}"
+                    hx-target="#page-region"
+                    hx-push-url="?page={{ urlquery .Path }}"
+                    hx-swap="innerHTML"
+                    data-search-path="{{ .Path }}">
+              <div class="flex items-center justify-between text-xs text-slate-500">
+                <span class="font-mono text-xs">{{ .Path }}:{{ .Line }}</span>
+                {{ if .Match }}<span class="text-sky-400">match</span>{{ end }}
+              </div>
+              <p class="mt-2 text-sm text-slate-200 break-words whitespace-pre-wrap">{{ .LineText }}</p>
+            </button>
+          </li>
+        {{ end }}
+      </ul>
+    {{ else }}
+      <p class="text-sm text-slate-400">No results found.</p>
+    {{ end }}
+  {{ else }}
+    <p class="text-sm text-slate-400">Type to search the wiki. Use the toggles to refine your results.</p>
+  {{ end }}
+</div>
+{{ end }}

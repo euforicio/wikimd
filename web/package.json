@@ -1,0 +1,30 @@
+{
+  "name": "wikimd-web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Frontend build tooling for wikimd",
+  "scripts": {
+    "dev:css": "tailwindcss -i ./src/app.css -o ../static/css/app.css --watch",
+    "build:css": "tailwindcss -i ./src/app.css -o ../static/css/app.css --minify",
+    "dev:js": "bun build.js --watch",
+    "build:js": "bun build.js --production",
+    "build": "bun run build:css && bun run build:js",
+    "dev": "echo 'Run make dev instead - requires parallel execution of CSS and JS watchers'"
+  },
+  "keywords": [
+    "tailwindcss",
+    "daisyui"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "caniuse-lite": "^1.0.30001751"
+  },
+  "devDependencies": {
+    "@tailwindcss/typography": "^0.5.12",
+    "autoprefixer": "^10.4.20",
+    "daisyui": "^4.12.10",
+    "postcss": "^8.4.41",
+    "tailwindcss": "^3.4.13"
+  }
+}

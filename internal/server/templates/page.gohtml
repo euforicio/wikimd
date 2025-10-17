@@ -1,0 +1,340 @@
+{{ define "page" }}
+<div class="space-y-10" data-current-path="{{ .Path }}">
+  <header class="flex flex-wrap items-start justify-between gap-6">
+    <div class="flex-1 min-w-0 space-y-6">
+      {{ if .Breadcrumbs }}
+        <nav aria-label="Breadcrumb" class="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.35em] text-slate-500/70">
+          <span class="text-slate-600">Workspace</span>
+          {{ range $index, $crumb := .Breadcrumbs }}
+            <span class="text-slate-700/80"> / </span>
+            {{ if $crumb.Path }}
+              <a href="/page/{{ $crumb.Path }}"
+                 hx-get="/api/page/{{ $crumb.Path }}"
+                 hx-target="#page-region"
+                 hx-push-url="/page/{{ $crumb.Path }}"
+                 hx-swap="innerHTML"
+                 class="transition hover:text-slate-200">
+                {{ $crumb.Title }}
+              </a>
+            {{ else }}
+              <span class="text-slate-300">{{ $crumb.Title }}</span>
+            {{ end }}
+          {{ end }}
+        </nav>
+      {{ end }}
+
+      {{ if .Metadata.Tags }}
+        <div class="flex flex-wrap items-center gap-2">
+          {{ range $index, $tag := .Metadata.Tags }}
+            <span class="tag-pill {{ if gt $index 0 }}tag-pill-secondary{{ end }}">{{ $tag }}</span>
+          {{ end }}
+        </div>
+      {{ end }}
+
+      <div class="flex flex-wrap items-center gap-3 text-sm text-slate-500">
+        <span class="meta-chip">
+          <span class="opacity-70">Last updated</span>
+          <span>{{ formatTime .Modified }}</span>
+        </span>
+      </div>
+
+      {{ if .Metadata.Description }}
+        <div class="page-callout">
+          {{ .Metadata.Description }}
+        </div>
+      {{ end }}
+    </div>
+
+    {{ if not .Missing }}
+    <div class="flex-shrink-0">
+      <div class="flex items-center gap-2">
+        <button type="button"
+                id="copy-markdown-button"
+                class="inline-flex items-center gap-2 rounded-lg border border-surface-border/70 bg-surface-subtle/80 px-3 py-2 text-sm font-medium text-slate-200 transition hover:border-slate-600 hover:bg-surface-subtle hover:text-white"
+                aria-label="Copy markdown to clipboard">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
+            <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z" />
+          </svg>
+        </button>
+        <div class="relative" id="export-menu-container">
+          <button type="button"
+                  id="export-button"
+                  class="inline-flex items-center gap-2 rounded-lg border border-surface-border/70 bg-surface-subtle/80 px-3 py-2 text-sm font-medium text-slate-200 transition hover:border-slate-600 hover:bg-surface-subtle hover:text-white"
+                  aria-label="Export page"
+                  aria-expanded="false"
+                  aria-haspopup="true">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+            </svg>
+          </button>
+
+        <div id="export-popover"
+             class="absolute right-0 z-50 mt-2 hidden w-48 rounded-lg border border-surface-border/70 bg-surface shadow-2xl"
+             role="menu"
+             aria-orientation="vertical"
+             aria-labelledby="export-button">
+          <div class="py-1">
+            <button type="button"
+                    class="export-option flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-slate-300 transition hover:bg-surface-subtle hover:text-white"
+                    data-format="html"
+                    role="menuitem">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+              </svg>
+              HTML
+            </button>
+            <button type="button"
+                    class="export-option flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-slate-300 transition hover:bg-surface-subtle hover:text-white"
+                    data-format="pdf"
+                    role="menuitem">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd" />
+              </svg>
+              PDF
+            </button>
+            <button type="button"
+                    class="export-option flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-slate-300 transition hover:bg-surface-subtle hover:text-white"
+                    data-format="markdown"
+                    role="menuitem">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd" />
+              </svg>
+              Markdown
+            </button>
+            <button type="button"
+                    class="export-option flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-slate-300 transition hover:bg-surface-subtle hover:text-white"
+                    data-format="txt"
+                    role="menuitem">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd" />
+              </svg>
+              Plain Text
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    {{ end }}
+
+  </header>
+
+  <article id="page-view" class="prose prose-invert max-w-none">
+    {{ .HTML }}
+  </article>
+</div>
+
+<script>
+(function() {
+  const exportButton = document.getElementById('export-button');
+  const exportPopover = document.getElementById('export-popover');
+  const exportOptions = document.querySelectorAll('.export-option');
+
+  if (!exportButton || !exportPopover) return;
+
+  function togglePopover() {
+    const isHidden = exportPopover.classList.contains('hidden');
+    if (isHidden) {
+      exportPopover.classList.remove('hidden');
+      exportButton.setAttribute('aria-expanded', 'true');
+    } else {
+      exportPopover.classList.add('hidden');
+      exportButton.setAttribute('aria-expanded', 'false');
+    }
+  }
+
+  function closePopover() {
+    exportPopover.classList.add('hidden');
+    exportButton.setAttribute('aria-expanded', 'false');
+  }
+
+  exportButton.addEventListener('click', function(e) {
+    e.stopPropagation();
+    togglePopover();
+  });
+
+  // Close on outside click
+  document.addEventListener('click', function(e) {
+    if (!exportPopover.classList.contains('hidden') &&
+        !exportPopover.contains(e.target) &&
+        e.target !== exportButton) {
+      closePopover();
+    }
+  });
+
+  // Close on ESC key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && !exportPopover.classList.contains('hidden')) {
+      closePopover();
+      exportButton.focus();
+    }
+  });
+
+  function parseFilename(header) {
+    if (!header) {
+      return null;
+    }
+    const utfMatch = header.match(/filename\*=(?:UTF-8'')?([^;]+)/i);
+    if (utfMatch && utfMatch[1]) {
+      try {
+        return decodeURIComponent(utfMatch[1].trim().replace(/^"(.*)"$/, '$1'));
+      } catch (_) {
+        return utfMatch[1].trim().replace(/^"(.*)"$/, '$1');
+      }
+    }
+    const asciiMatch = header.match(/filename="?([^";]+)"?/i);
+    if (asciiMatch && asciiMatch[1]) {
+      return asciiMatch[1].trim();
+    }
+    return null;
+  }
+
+  function fallbackFilename(format) {
+    switch (format) {
+      case 'pdf':
+        return 'wikimd-export.pdf';
+      case 'markdown':
+        return 'wikimd-export.md';
+      case 'txt':
+        return 'wikimd-export.txt';
+      default:
+        return 'wikimd-export.html';
+    }
+  }
+
+  async function triggerDownload(blob, filename) {
+    const objectUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = objectUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    requestAnimationFrame(() => {
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 2000);
+    });
+    return true;
+  }
+
+  async function handleExport(format) {
+    const currentPathEl = document.querySelector('[data-current-path]');
+    const currentPath = currentPathEl?.getAttribute('data-current-path');
+    if (!currentPath) {
+      console.error('No current path found');
+      return;
+    }
+
+    // Show loading state
+    exportButton.disabled = true;
+    exportButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle class="opacity-30" cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" /><path class="opacity-80" d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>';
+
+    const url = '/api/export?path=' + encodeURIComponent(currentPath) + '&format=' + encodeURIComponent(format);
+
+    try {
+      const response = await fetch(url, { credentials: 'include' });
+      if (!response.ok) {
+        throw new Error('Export failed with status ' + response.status);
+      }
+      const blob = await response.blob();
+      const contentDisposition = response.headers.get('content-disposition');
+      const filename = parseFilename(contentDisposition) || fallbackFilename(format);
+      await triggerDownload(blob, filename);
+    } catch (err) {
+      console.error('Export failed', err);
+      alert('Failed to export document: ' + (err?.message || err));
+    } finally {
+      exportButton.disabled = false;
+      exportButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>';
+      closePopover();
+    }
+  }
+
+  // Handle export option clicks
+  exportOptions.forEach(function(option) {
+    option.addEventListener('click', function() {
+      const format = this.getAttribute('data-format');
+      handleExport(format);
+    });
+  });
+
+  // Keyboard navigation in menu
+  exportPopover.addEventListener('keydown', function(e) {
+    const items = Array.from(exportOptions);
+    const currentIndex = items.indexOf(document.activeElement);
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      const nextIndex = currentIndex < items.length - 1 ? currentIndex + 1 : 0;
+      items[nextIndex].focus();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      const prevIndex = currentIndex > 0 ? currentIndex - 1 : items.length - 1;
+      items[prevIndex].focus();
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      items[0].focus();
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      items[items.length - 1].focus();
+    }
+  });
+})();
+
+// Copy markdown to clipboard
+(function() {
+  const copyButton = document.getElementById('copy-markdown-button');
+  if (!copyButton) return;
+
+  const originalHTML = copyButton.innerHTML;
+  const copiedHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>';
+
+  async function copyMarkdown() {
+    const currentPathEl = document.querySelector('[data-current-path]');
+    const currentPath = currentPathEl?.getAttribute('data-current-path');
+    if (!currentPath) {
+      return;
+    }
+
+    copyButton.disabled = true;
+
+    try {
+      const url = '/api/export?path=' + encodeURIComponent(currentPath) + '&format=markdown';
+
+      // Create a promise that fetches the markdown
+      const textPromise = fetch(url, { credentials: 'include' })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Failed to fetch markdown');
+          }
+          return response.blob();
+        })
+        .then(blob => blob.text())
+        .then(text => new Blob([text], { type: 'text/plain' }));
+
+      // Write to clipboard immediately (maintains user gesture context)
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          'text/plain': textPromise
+        })
+      ]);
+
+      // Show success feedback
+      copyButton.innerHTML = copiedHTML;
+      copyButton.classList.add('!text-green-400');
+
+      setTimeout(function() {
+        copyButton.innerHTML = originalHTML;
+        copyButton.classList.remove('!text-green-400');
+        copyButton.disabled = false;
+      }, 2000);
+
+    } catch (err) {
+      alert('Failed to copy markdown: ' + (err?.message || err));
+      copyButton.disabled = false;
+    }
+  }
+
+  copyButton.addEventListener('click', copyMarkdown);
+})();
+</script>
+{{ end }}

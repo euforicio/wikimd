@@ -1,0 +1,142 @@
+# GoReleaser configuration for WikiMD
+# Documentation: https://goreleaser.com
+
+# Project metadata
+project_name: wikimd
+
+# Before hooks - commands to run before building
+before:
+  hooks:
+    # Ensure dependencies are up to date
+    - go mod tidy
+    # Run tests before building
+    - go test ./...
+
+# Build configuration
+builds:
+  - # Main application build
+    id: wikimd
+    # Entry point for the application
+    main: ./cmd/wikimd
+    # Binary name (platform-specific extensions added automatically)
+    binary: wikimd
+    # Environment variables for the build
+    env:
+      - CGO_ENABLED=0
+    # Inject version information via ldflags
+    ldflags:
+      - -s -w
+      - -X github.com/euforicio/wikimd/internal/buildinfo.Version={{.Version}}
+      - -X github.com/euforicio/wikimd/internal/buildinfo.Commit={{.Commit}}
+      - -X github.com/euforicio/wikimd/internal/buildinfo.Date={{.Date}}
+    # Target platforms and architectures
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    # Ignore specific combinations (e.g., windows/arm64 if not needed)
+    ignore:
+      - goos: windows
+        goarch: arm64
+
+# Archive configuration - how to package the binaries
+archives:
+  - # Archive name format
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- .Version }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    # Format based on OS (.tar.gz for Unix, .zip for Windows)
+    format_overrides:
+      - goos: windows
+        format: zip
+    # Files to include in the archive
+    files:
+      - README.md
+      - LICENSE*
+      # Include static assets if needed
+      - static/**/*
+      - web/**/*
+
+# Checksums file generation
+checksum:
+  name_template: "checksums.txt"
+  algorithm: sha256
+
+# Snapshot builds (for unreleased versions)
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+
+# Changelog generation
+changelog:
+  # Sort commits by type
+  sort: asc
+  # Group commits by category
+  use: github
+  groups:
+    - title: Features
+      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
+      order: 0
+    - title: "Bug Fixes"
+      regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
+      order: 1
+    - title: "Performance Improvements"
+      regexp: '^.*?perf(\([[:word:]]+\))??!?:.+$'
+      order: 2
+    - title: "Documentation"
+      regexp: '^.*?docs(\([[:word:]]+\))??!?:.+$'
+      order: 3
+    - title: Others
+      order: 999
+  filters:
+    # Skip merge commits
+    exclude:
+      - "^Merge"
+      - "^merge"
+      - "^test:"
+      - "^ci:"
+      - "^chore:"
+
+# Release configuration
+release:
+  # GitHub release settings
+  github:
+    owner: euforicio
+    name: wikimd
+  # Draft release (set to false for automatic publishing)
+  draft: false
+  # Mark as prerelease for versions with suffixes (alpha, beta, rc)
+  prerelease: auto
+  # Release name template
+  name_template: "{{.ProjectName}} v{{.Version}}"
+  # Disable footer in release notes
+  footer: |
+    ## Installation
+
+    ### macOS
+    ```bash
+    # AMD64
+    curl -L https://github.com/euforicio/wikimd/releases/download/{{ .Tag }}/wikimd_{{ .Version }}_Darwin_x86_64.tar.gz | tar xz
+    # ARM64 (Apple Silicon)
+    curl -L https://github.com/euforicio/wikimd/releases/download/{{ .Tag }}/wikimd_{{ .Version }}_Darwin_arm64.tar.gz | tar xz
+    ```
+
+    ### Linux
+    ```bash
+    # AMD64
+    curl -L https://github.com/euforicio/wikimd/releases/download/{{ .Tag }}/wikimd_{{ .Version }}_Linux_x86_64.tar.gz | tar xz
+    # ARM64
+    curl -L https://github.com/euforicio/wikimd/releases/download/{{ .Tag }}/wikimd_{{ .Version }}_Linux_arm64.tar.gz | tar xz
+    ```
+
+    ### Windows
+    Download the appropriate `.zip` file from the assets below and extract it.
+
+    **Full Changelog**: https://github.com/euforicio/wikimd/compare/{{ .PreviousTag }}...{{ .Tag }}

@@ -1,0 +1,114 @@
+# GitHub Actions workflow for running tests
+name: Test
+
+# Run on pull requests and pushes to main
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+# Cancel in-progress runs for the same workflow and branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Permissions required for the workflow
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Set up Go environment
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: stable
+          cache: true
+
+      # Step 3: Set up Bun for building frontend assets
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      # Step 4: Install frontend dependencies
+      - name: Install frontend dependencies
+        run: cd web && bun install
+
+      # Step 5: Build frontend assets
+      - name: Build frontend assets
+        run: go generate
+
+      # Step 6: Install ripgrep (required for search tests)
+      - name: Install ripgrep
+        run: sudo apt-get update && sudo apt-get install -y ripgrep
+
+      # Step 7: Download dependencies
+      - name: Download dependencies
+        run: go mod download
+
+      # Step 8: Build the project
+      - name: Build
+        run: go build -v ./...
+
+      # Step 9: Run tests with coverage
+      - name: Run tests
+        run: go test -v -race -p 4 -parallel 4 -coverprofile=coverage.out -covermode=atomic ./...
+
+      # Step 10: Upload coverage
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        continue-on-error: true
+        with:
+          files: ./coverage.out
+          flags: unittests
+          name: codecov-umbrella
+
+  build:
+    name: Build binaries
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Set up Go environment
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+          cache: true
+
+      # Step 3: Set up Bun for building frontend assets
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      # Step 4: Install frontend dependencies
+      - name: Install frontend dependencies
+        run: cd web && bun install
+
+      # Step 5: Build frontend assets
+      - name: Build frontend assets
+        run: go generate
+
+      # Step 6: Build for multiple platforms
+      - name: Build for Linux
+        run: GOOS=linux GOARCH=amd64 go build -o wikimd-linux-amd64 ./cmd/wikimd
+
+      - name: Build for macOS
+        run: GOOS=darwin GOARCH=amd64 go build -o wikimd-darwin-amd64 ./cmd/wikimd
+
+      - name: Build for Windows
+        run: GOOS=windows GOARCH=amd64 go build -o wikimd-windows-amd64.exe ./cmd/wikimd

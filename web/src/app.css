@@ -1,0 +1,438 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import "./styles/chroma-github-dark.css";
+
+@layer base {
+  /* Default to dark theme - use custom.css for theming (see THEMING_PLAN.md) */
+  :root {
+    /* Surface colors (RGB format for Tailwind compatibility) */
+    --surface: 26 26 26;
+    --surface-subtle: 36 36 36;
+    --surface-accent: 45 45 45;
+    --surface-elevated: 51 51 51;
+    --surface-border: 58 58 58;
+
+    /* Colors - Background */
+    --color-bg-primary: #1a1a1a;
+    --color-bg-secondary: #242424;
+    --color-bg-tertiary: #2d2d2d;
+    --color-bg-code: #000000;
+    --color-bg-elevated: #333333;
+
+    /* Colors - Text */
+    --color-text-primary: #f1f5f9;
+    --color-text-secondary: #cbd5e1;
+    --color-text-muted: #94a3b8;
+    --color-text-link: #10b981;
+    --color-text-code: #e2e8f0;
+
+    /* Colors - Borders */
+    --color-border: #3a3a3a;
+    --color-border-dark: #2d2d2d;
+    --color-border-light: #475569;
+
+    /* Colors - Accent */
+    --color-accent: #10b981;
+    --color-accent-hover: #059669;
+    --color-success: #10b981;
+    --color-warning: #f59e0b;
+    --color-error: #ef4444;
+
+    /* Colors - Sidebar */
+    --color-sidebar-bg: #242424;
+    --color-sidebar-text: #cbd5e1;
+    --color-sidebar-hover: #2d2d2d;
+    --color-sidebar-active: #10b981;
+
+    /* Typography */
+    --font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-family-mono: "JetBrains Mono", "SF Mono", Monaco, Menlo, monospace;
+    --font-size-base: 16px;
+    --font-size-sm: 14px;
+    --font-size-xs: 12px;
+    --font-size-lg: 18px;
+    --font-size-xl: 24px;
+    --line-height-base: 1.6;
+    --line-height-tight: 1.25;
+
+    /* Spacing */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+    --spacing-2xl: 3rem;
+
+    /* Layout */
+    --sidebar-width: 280px;
+    --content-max-width: 900px;
+    --header-height: 60px;
+    --border-radius: 0.5rem;
+    --border-radius-sm: 0.25rem;
+    --border-radius-lg: 0.75rem;
+
+    /* Shadows */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.6);
+
+    /* Transitions */
+    --transition-fast: 150ms ease;
+    --transition-base: 250ms ease;
+    --transition-slow: 350ms ease;
+
+    /* Code blocks */
+    --code-bg: rgba(0, 0, 0, 0.5);
+    --code-border: rgba(71, 85, 105, 0.6);
+    --code-text: #e2e8f0;
+  }
+
+  html {
+    @apply h-full overflow-hidden bg-surface text-slate-100 transition-colors duration-300;
+  }
+  body {
+    @apply h-full antialiased overflow-hidden bg-surface text-inherit transition-colors duration-300;
+  }
+}
+
+@layer components {
+  .sidebar-heading {
+    @apply px-2 text-[10px] font-semibold uppercase tracking-[0.28em] text-slate-500/80;
+  }
+  .sidebar-quick-action {
+    @apply flex items-center justify-between gap-3 rounded-xl border border-surface-border/60 bg-surface-subtle/80 px-4 py-2.5 text-[13px] font-medium text-slate-700 transition-all hover:border-surface-border hover:bg-surface-accent/70 dark:text-slate-300 dark:hover:border-slate-700 dark:hover:bg-slate-800/60;
+  }
+  .sidebar-quick-action kbd {
+    @apply rounded-md border border-surface-border/70 bg-surface-accent/80 px-2 py-0.5 text-[11px] font-semibold text-slate-600 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-400;
+  }
+  .sidebar-quick-action .icon {
+    @apply flex h-8 w-8 items-center justify-center rounded-lg bg-surface-accent/80 text-slate-600 transition-colors group-hover:bg-surface-accent dark:bg-slate-800/70 dark:text-slate-300 dark:group-hover:bg-slate-700 dark:group-hover:text-white;
+  }
+  .tree-group {
+    @apply flex flex-col gap-0.5 px-0;
+  }
+  .tree-link {
+    @apply flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[12px] font-medium text-slate-700 transition-colors hover:bg-surface-accent/70 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/50 dark:hover:text-white;
+  }
+  .tree-link-active {
+    @apply bg-emerald-500/10 text-emerald-700 shadow-inner dark:text-white;
+  }
+  .tree-summary {
+    @apply flex items-center gap-1.5 rounded-md px-2 py-1.5 text-[12px] font-semibold text-slate-600 transition-colors hover:text-slate-900 hover:bg-surface-accent/70 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-900/70;
+  }
+  .tree-border {
+    @apply border-l border-slate-300/70 pl-2 dark:border-slate-800/80 dark:pl-2.5;
+  }
+  .tag-pill {
+    @apply inline-flex items-center rounded-full border border-emerald-500/60 bg-emerald-500/20 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-200;
+  }
+  .tag-pill-secondary {
+    @apply border-emerald-400/50 bg-emerald-400/15 text-emerald-300;
+  }
+  .meta-chip {
+    @apply inline-flex items-center gap-2 rounded-full border border-surface-border/70 bg-surface-accent/70 px-3 py-1 text-xs text-slate-600 dark:border-slate-800/80 dark:bg-slate-900/80 dark:text-slate-400;
+  }
+  .page-callout {
+    @apply rounded-2xl border-l-4 border-l-amber-400 border-y border-r border-amber-500/30 bg-amber-500/10 px-6 py-5 text-[15px] leading-7 text-amber-50 shadow-inner;
+  }
+  .search-result {
+    @apply rounded-2xl border border-surface-border/70 bg-surface-elevated/90 px-5 py-4 text-left transition-colors hover:border-emerald-500/60 hover:bg-surface-accent/90 hover:text-slate-900 dark:border-slate-800/80 dark:bg-slate-900/80 dark:hover:bg-slate-800/90 dark:hover:text-white;
+  }
+  .search-result path,
+  .search-result svg {
+    pointer-events: none;
+  }
+}
+
+@layer utilities {
+  .scroll-thin {
+    scrollbar-width: thin;
+  }
+  .scroll-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+  .scroll-thin::-webkit-scrollbar-thumb {
+    background-color: rgba(71, 85, 105, 0.4);
+    border-radius: 9999px;
+  }
+
+  /* Blockquote styling for prose content */
+  .prose-invert blockquote {
+    @apply border-l-4 border-l-amber-400 bg-amber-500/10 text-amber-50 rounded-r-lg;
+    padding-left: 1.5em;
+    padding-right: 1.5em;
+    padding-top: 0.75em;
+    padding-bottom: 0.75em;
+    font-style: normal;
+  }
+
+  .prose-invert blockquote p {
+    @apply text-amber-50/90;
+  }
+
+  /* Code block styles (dark theme default) */
+  .prose-invert :where(code):not(:where([class~="not-prose"] *)) {
+    background-color: rgba(0, 0, 0, 0.5) !important;
+    color: #e2e8f0;
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    font-size: 0.875em;
+  }
+
+  .prose-invert :where(pre):not(:where([class~="not-prose"] *)) {
+    background-color: #000000 !important;
+    border-radius: 0.5rem;
+    position: relative;
+  }
+
+  .prose-invert :where(pre code):not(:where([class~="not-prose"] *)) {
+    background-color: transparent !important;
+  }
+
+  /* Code block copy button */
+  .code-block-wrapper {
+    position: relative;
+  }
+
+  .code-copy-button {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    padding: 0.375rem 0.625rem;
+    background-color: rgba(51, 65, 85, 0.8);
+    border: 1px solid rgba(71, 85, 105, 0.6);
+    border-radius: 0.375rem;
+    color: #cbd5e1;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    opacity: 0;
+    transition: all 0.2s ease;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .code-block-wrapper:hover .code-copy-button {
+    opacity: 1;
+  }
+
+  .code-copy-button:hover {
+    background-color: rgba(71, 85, 105, 0.9);
+    border-color: rgba(100, 116, 139, 0.8);
+    color: #f1f5f9;
+  }
+
+  .code-copy-button.copied {
+    background-color: rgba(16, 185, 129, 0.2);
+    border-color: rgba(16, 185, 129, 0.5);
+    color: #6ee7b7;
+  }
+
+  /* Sidebar resize handle styles */
+  #sidebar-resize-handle {
+    /* Add padding to make it easier to grab */
+    padding-left: 2px;
+    padding-right: 2px;
+    margin-left: -2px;
+    margin-right: -2px;
+  }
+
+  /* Collapsed sidebar styles */
+  #sidebar.collapsed {
+    min-width: 0 !important;
+  }
+
+  /* No transition class for instant state changes */
+  #sidebar.no-transition {
+    transition: none !important;
+  }
+
+  /* Only animate when collapsing/expanding */
+  #sidebar.collapsed {
+    transition: width 0.3s ease;
+  }
+
+  /* Dark mode mermaid text overrides - comprehensive coverage for all diagram types */
+
+  /* Base text - covers most diagram types */
+  .dark .mermaid text {
+    fill: #f1f5f9 !important;
+  }
+
+  /* Gantt chart specific */
+  .dark .mermaid .taskText,
+  .dark .mermaid .sectionTitle,
+  .dark .mermaid .titleText,
+  .dark .mermaid .taskTextOutsideRight,
+  .dark .mermaid .taskTextOutsideLeft {
+    fill: #f1f5f9 !important;
+  }
+
+  /* Axis and grid labels */
+  .dark .mermaid .axis text,
+  .dark .mermaid .grid .tick text {
+    fill: #94a3b8 !important;
+  }
+
+  /* Flowchart and graph labels */
+  .dark .mermaid .nodeLabel,
+  .dark .mermaid .edgeLabel {
+    color: #f1f5f9 !important;
+  }
+
+  /* Sequence diagram */
+  .dark .mermaid .messageText,
+  .dark .mermaid .labelText,
+  .dark .mermaid .loopText {
+    fill: #f1f5f9 !important;
+  }
+
+  /* Sequence diagram actor boxes - blue background */
+  .dark .mermaid g.actor rect {
+    fill: #475569 !important;
+    stroke: #64748b !important;
+  }
+
+  /* Sequence diagram actor text - light for visibility */
+  .dark .mermaid g.actor text.actor {
+    fill: #f1f5f9 !important;
+  }
+
+  /* Alternative actor text selector */
+  .dark .mermaid .actor text {
+    fill: #f1f5f9 !important;
+  }
+
+  /* Sequence diagram note boxes */
+  .dark .mermaid .note rect {
+    fill: #475569 !important;
+    stroke: #64748b !important;
+  }
+
+  .dark .mermaid .noteText {
+    fill: #f1f5f9 !important;
+  }
+
+  /* Class diagram */
+  .dark .mermaid .classLabel,
+  .dark .mermaid .classTitle,
+  .dark .mermaid .relationshipLabel {
+    fill: #f1f5f9 !important;
+  }
+
+  /* State diagram */
+  .dark .mermaid .stateLabel,
+  .dark .mermaid .statediagram-state .state-title {
+    fill: #f1f5f9 !important;
+  }
+
+  /* Entity Relationship diagram */
+  .dark .mermaid .er .entityLabel,
+  .dark .mermaid .er .attributeBoxOdd,
+  .dark .mermaid .er .attributeBoxEven {
+    fill: #f1f5f9 !important;
+  }
+
+  /* Pie chart */
+  .dark .mermaid .pieCircle text,
+  .dark .mermaid .pieTitleText,
+  .dark .mermaid .slice {
+    fill: #f1f5f9 !important;
+  }
+
+  /* Legend */
+  .dark .mermaid .legendText,
+  .dark .mermaid .legend text {
+    fill: #f1f5f9 !important;
+  }
+
+  /* Journey diagram */
+  .dark .mermaid .journey .section-title,
+  .dark .mermaid .journey .task-text {
+    fill: #f1f5f9 !important;
+  }
+
+  /* Ensure labels in flowcharts are visible */
+  .dark .mermaid .label {
+    color: #f1f5f9 !important;
+  }
+
+  /* Ensure node text is visible */
+  .dark .mermaid .node rect,
+  .dark .mermaid .node circle,
+  .dark .mermaid .node polygon {
+    stroke: #475569 !important;
+  }
+
+  /* Anchor link styles for heading permalinks */
+  .prose :where(h1, h2, h3, h4, h5, h6):not(:where([class~="not-prose"] *)) {
+    position: relative;
+  }
+
+  .prose :where(.anchor):not(:where([class~="not-prose"] *)) {
+    @apply ml-2 text-slate-400 no-underline opacity-0 transition-opacity hover:text-emerald-600 dark:text-slate-600 dark:hover:text-emerald-400;
+    font-weight: normal;
+  }
+
+  .prose :where(h1, h2, h3, h4, h5, h6):hover .anchor:not(:where([class~="not-prose"] *)),
+  .prose :where(.anchor):focus:not(:where([class~="not-prose"] *)) {
+    opacity: 1;
+  }
+
+  /* Fix badges and inline images to render inline, not as blocks */
+  .prose :where(img):not(:where([class~="not-prose"] *)) {
+    display: inline !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+  }
+
+  /* If image is wrapped in a paragraph with only images/links, make paragraph inline-flex */
+  .prose :where(p):has(> a > img:only-child):not(:where([class~="not-prose"] *)) {
+    display: inline-flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  /* Override Tailwind prose default paragraph spacing for tighter vertical spacing */
+  .prose :where(p):not(:where([class~="not-prose"] *)) {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+    line-height: 1.5;
+  }
+
+  /* Reduce line-height globally for prose content to match GitHub */
+  .prose {
+    line-height: 1.6;
+  }
+
+  /* Tighter line-height for headings */
+  .prose :where(h1, h2, h3, h4, h5, h6):not(:where([class~="not-prose"] *)) {
+    line-height: 1.25;
+  }
+
+  /* Tighter spacing for lists */
+  .prose :where(ul, ol):not(:where([class~="not-prose"] *)) {
+    margin-top: 0.75em;
+    margin-bottom: 0.75em;
+  }
+
+  .prose :where(li):not(:where([class~="not-prose"] *)) {
+    margin-top: 0.25em;
+    margin-bottom: 0.25em;
+    line-height: 1.2;
+  }
+
+  /* Tighter line-height for code blocks */
+  .prose :where(pre):not(:where([class~="not-prose"] *)) {
+    line-height: 1.4;
+  }
+
+  .prose :where(pre code):not(:where([class~="not-prose"] *)) {
+    line-height: 1.4;
+  }
+}

@@ -1,0 +1,145 @@
+# golangci-lint configuration
+# Documentation: https://golangci-lint.run/docs/configuration/file/
+
+version: "2"
+
+run:
+  # Timeout for analysis
+  timeout: 5m
+  # Include test files
+  tests: true
+  # Go version to target (must match go.mod)
+  go: "1.25"
+
+# Output configuration
+output:
+  formats:
+    text:
+      colors: true
+      print-issued-lines: true
+      print-linter-name: true
+
+# Linters configuration
+linters:
+  enable:
+    # Bugs & Correctness
+    - errcheck
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+
+    # Style & Code Quality
+    - misspell
+    - revive
+
+    # Performance
+    - prealloc
+
+    # Security
+    - gosec
+
+    # Complexity
+    - gocyclo
+    - gocognit
+
+    # Best Practices
+    - goconst
+    - gocritic
+    - nilerr
+    - nolintlint
+    - unconvert
+    - wastedassign
+
+  disable:
+    - exhaustive
+    - funlen
+    - lll
+
+  settings:
+    errcheck:
+      check-type-assertions: true
+      check-blank: false
+
+    govet:
+      enable-all: true
+      disable:
+        - shadow
+
+    gocyclo:
+      min-complexity: 15
+
+    gocognit:
+      min-complexity: 20
+
+    goconst:
+      min-len: 3
+      min-occurrences: 3
+
+    gosec:
+      excludes:
+        - G104
+
+    misspell:
+      locale: US
+
+    revive:
+      confidence: 0.8
+      rules:
+        - name: blank-imports
+        - name: context-as-argument
+        - name: context-keys-type
+        - name: dot-imports
+        - name: error-return
+        - name: error-strings
+        - name: error-naming
+        - name: exported
+        - name: if-return
+        - name: increment-decrement
+        - name: var-naming
+        - name: var-declaration
+        - name: package-comments
+        - name: range
+        - name: receiver-naming
+        - name: time-naming
+        - name: unexported-return
+        - name: indent-error-flow
+        - name: errorf
+        - name: empty-block
+        - name: superfluous-else
+        - name: unused-parameter
+        - name: unreachable-code
+        - name: redefines-builtin-id
+
+  exclusions:
+    rules:
+      - path: _test\.go
+        linters:
+          - gocyclo
+          - errcheck
+          - gocognit
+          - gosec
+          - goconst
+
+      - text: "weak cryptographic primitive"
+        linters:
+          - gosec
+
+      - linters:
+          - staticcheck
+        text: "SA9003:"
+
+      - linters:
+          - lll
+        source: "^//go:generate "
+
+# Formatters configuration
+formatters:
+  enable:
+    - gofmt
+    - goimports
+
+# Issues configuration
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0

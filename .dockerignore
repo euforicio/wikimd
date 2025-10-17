@@ -1,0 +1,45 @@
+# Build artifacts
+bin/
+dist/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test and coverage
+*.test
+*.out
+coverage.txt
+
+# Development
+.DS_Store
+.env
+.env.*
+*.swp
+*.swo
+*~
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+*.md
+!README.md
+docs/
+examples/
+
+# CI/CD
+.github/
+
+# Node/Bun (we copy specific files we need)
+node_modules/
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# Plans and temporary files
+plan/
+SECURITY_FIXES_SUMMARY.md

@@ -1,0 +1,44 @@
+/* Dark Theme - Enhanced contrast with deep blacks */
+:root {
+  /* Backgrounds - Deeper blacks */
+  --color-bg-primary: #0a0a0a;
+  --color-bg-secondary: #121212;
+  --color-bg-tertiary: #1a1a1a;
+  --color-bg-code: #000000;
+  --color-bg-elevated: #1f1f1f;
+
+  /* Text - Brighter for better contrast */
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #e0e0e0;
+  --color-text-muted: #a0a0a0;
+  --color-text-link: #60a5fa;
+  --color-text-code: #f0f0f0;
+
+  /* Borders - Subtle grays */
+  --color-border: #2a2a2a;
+  --color-border-dark: #1a1a1a;
+  --color-border-light: #3a3a3a;
+
+  /* Accent - Blue theme */
+  --color-accent: #3b82f6;
+  --color-accent-hover: #2563eb;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+
+  /* Sidebar */
+  --color-sidebar-bg: #0f0f0f;
+  --color-sidebar-text: #e0e0e0;
+  --color-sidebar-hover: #1a1a1a;
+  --color-sidebar-active: #3b82f6;
+
+  /* Code blocks */
+  --code-bg: #000000;
+  --code-border: rgba(255, 255, 255, 0.1);
+  --code-text: #f0f0f0;
+
+  /* Shadows - Deeper */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.8);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.9);
+}

@@ -1,0 +1,44 @@
+/* Light Theme - Clean and bright */
+:root {
+  /* Light backgrounds */
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f8f9fa;
+  --color-bg-tertiary: #e9ecef;
+  --color-bg-code: #f6f8fa;
+  --color-bg-elevated: #ffffff;
+
+  /* Dark text on light background */
+  --color-text-primary: #1a1a1a;
+  --color-text-secondary: #4a5568;
+  --color-text-muted: #718096;
+  --color-text-link: #2563eb;
+  --color-text-code: #db2777;
+
+  /* Light mode borders */
+  --color-border: #e2e8f0;
+  --color-border-dark: #cbd5e0;
+  --color-border-light: #edf2f7;
+
+  /* Light mode accents */
+  --color-accent: #3b82f6;
+  --color-accent-hover: #2563eb;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+
+  /* Light sidebar */
+  --color-sidebar-bg: #f8f9fa;
+  --color-sidebar-text: #1a1a1a;
+  --color-sidebar-hover: #e9ecef;
+  --color-sidebar-active: #3b82f6;
+
+  /* Light code blocks */
+  --code-bg: #f6f8fa;
+  --code-border: rgba(27, 31, 35, 0.15);
+  --code-text: #24292e;
+
+  /* Light shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
+}

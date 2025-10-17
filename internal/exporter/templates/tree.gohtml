@@ -1,0 +1,43 @@
+{{ define "tree" }}
+  {{ if .Root }}
+    {{ template "tree-children" dict "Nodes" .Root.Children "Active" .Active }}
+  {{ else }}
+    <p class="px-3 py-2 text-sm text-slate-500">No documents found.</p>
+  {{ end }}
+{{ end }}
+
+{{ define "tree-children" }}
+  {{ $active := .Active }}
+  <ul class="flex flex-col gap-1">
+    {{ range .Nodes }}
+      {{ template "tree-node" dict "Node" . "Active" $active }}
+    {{ end }}
+  </ul>
+{{ end }}
+
+{{ define "tree-node" }}
+  {{ $node := .Node }}
+  {{ $active := .Active }}
+  {{ if eq $node.Type "directory" }}
+    <details class="group px-2" open>
+      <summary class="flex items-center gap-2 py-2 text-sm font-semibold text-slate-300 cursor-pointer select-none">
+        <span class="truncate">{{ $node.Title }}</span>
+      </summary>
+      <div class="ml-4 border-l border-surface-border/60 pl-3">
+        {{ if $node.Children }}
+          {{ template "tree-children" dict "Nodes" $node.Children "Active" $active }}
+        {{ else }}
+          <p class="px-3 py-2 text-xs text-slate-500">Empty</p>
+        {{ end }}
+      </div>
+    </details>
+  {{ else }}
+    <li>
+      <a href="{{ pageURL $node.RelativePath }}"
+         class="tree-link {{ if isActive $active $node.RelativePath }}tree-link-active{{ end }}"
+         data-tree-path="{{ $node.RelativePath }}">
+        <span class="truncate">{{ $node.Title }}</span>
+      </a>
+    </li>
+  {{ end }}
+{{ end }}

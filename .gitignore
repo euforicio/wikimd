@@ -1,0 +1,53 @@
+# Go
+bin/
+*.log
+*.out
+*.test
+coverage.txt
+
+# Node/Tailwind
+node_modules/
+web/dist/
+web/.cache/
+package-lock.json
+
+# IDE
+.DS_Store
+.vscode/
+.idea/
+
+# Build artifacts
+/wikimd
+/wikimd-export
+/wiki-export
+
+# Test directories
+test-wiki/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.crt
+secrets.yaml
+credentials.json
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Distribution
+dist/
+
+# Generated static assets (built via bun/tailwind)
+static/css/app.css
+static/js/*.js
+static/js/*.js.map
+static/js/chunks/
+
+# Vendor files (downloaded via build.js)
+static/vendor/*.js
+static/vendor/*.css
+!static/vendor/.gitkeep
