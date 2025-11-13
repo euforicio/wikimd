@@ -1,6 +1,9 @@
 # GoReleaser configuration for WikiMD
 # Documentation: https://goreleaser.com
 
+# Configuration schema version
+version: 2
+
 # Project metadata
 project_name: wikimd
 

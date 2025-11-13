@@ -37,7 +37,7 @@ jobs:
 
       # Step 4: Install frontend dependencies
       - name: Install frontend dependencies
-        run: cd web && bun install
+        run: cd web && bun install --frozen-lockfile
 
       # Step 5: Build frontend assets
       - name: Build frontend assets

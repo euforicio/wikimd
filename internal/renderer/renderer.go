@@ -75,7 +75,6 @@ var docPathKey = parser.NewContextKey()
 // linkTransformer rewrites .md links to /page/ routes and image paths to /media/ routes
 type linkTransformer struct{}
 
-//nolint:gocognit // AST traversal and link transformation requires conditional logic
 func (t *linkTransformer) Transform(node *ast.Document, _ text.Reader, pc parser.Context) {
 	// Get current document path from context (wiki-relative path)
 	currentPath := ""
@@ -93,71 +92,52 @@ func (t *linkTransformer) Transform(node *ast.Document, _ text.Reader, pc parser
 			return ast.WalkContinue, nil
 		}
 
-		// Handle markdown links
-		if link, ok := n.(*ast.Link); ok {
-			dest := string(link.Destination)
-
-			// Skip external links, anchors, and already-transformed links
-			if strings.HasPrefix(dest, "http://") ||
-				strings.HasPrefix(dest, "https://") ||
-				strings.HasPrefix(dest, "#") ||
-				strings.HasPrefix(dest, "/page/") {
-				return ast.WalkContinue, nil
-			}
-
-			// Transform .md links to /page/ routes (keeping .md extension)
-			if strings.HasSuffix(dest, ".md") {
-				// Keep .md extension for /page/ routes
-				// dest stays as is with .md extension
-
-				// Resolve relative links against current document's directory
-				if !strings.HasPrefix(dest, "/") {
-					// Relative link - join with current directory (both wiki-relative)
-					if currentDir != "" && currentDir != "." {
-						dest = path.Join(currentDir, dest)
-					}
-					// Clean and normalize the path
-					dest = path.Clean(dest)
-				}
-				// Absolute link - strip leading slash
-				dest = strings.TrimPrefix(dest, "/")
-
-				// Prepend /page/
-				dest = "/page/" + dest
-				link.Destination = []byte(dest)
-			}
-		}
-
-		// Handle images
-		if img, ok := n.(*ast.Image); ok {
-			dest := string(img.Destination)
-
-			// Skip external images and already-transformed images
-			if strings.HasPrefix(dest, "http://") ||
-				strings.HasPrefix(dest, "https://") ||
-				strings.HasPrefix(dest, "/media/") ||
-				strings.HasPrefix(dest, "/static/") {
-				return ast.WalkContinue, nil
-			}
-
-			// Transform relative image paths to /media/ routes
-			if !strings.HasPrefix(dest, "/") {
-				// Relative path - join with current directory
-				if currentDir != "" && currentDir != "." {
-					dest = path.Join(currentDir, dest)
-				}
-				dest = path.Clean(dest)
-			}
-			// Absolute path - strip leading slash
-			dest = strings.TrimPrefix(dest, "/")
-
-			// Prepend /media/
-			dest = "/media/" + dest
-			img.Destination = []byte(dest)
+		switch typed := n.(type) {
+		case *ast.Link:
+			t.transformLink(typed, currentDir)
+		case *ast.Image:
+			t.transformImage(typed, currentDir)
 		}
 
 		return ast.WalkContinue, nil
 	})
+}
+
+func (t *linkTransformer) transformLink(link *ast.Link, currentDir string) {
+	dest := string(link.Destination)
+	if dest == "" || t.isExternalLink(dest) || strings.HasPrefix(dest, "#") || strings.HasPrefix(dest, "/page/") {
+		return
+	}
+
+	if !strings.HasSuffix(dest, ".md") {
+		return
+	}
+
+	link.Destination = []byte("/page/" + normalizeWikiPath(dest, currentDir))
+}
+
+func (t *linkTransformer) transformImage(img *ast.Image, currentDir string) {
+	dest := string(img.Destination)
+	if dest == "" || t.isExternalLink(dest) || strings.HasPrefix(dest, "/media/") || strings.HasPrefix(dest, "/static/") {
+		return
+	}
+
+	img.Destination = []byte("/media/" + normalizeWikiPath(dest, currentDir))
+}
+
+func (t *linkTransformer) isExternalLink(dest string) bool {
+	return strings.HasPrefix(dest, "http://") || strings.HasPrefix(dest, "https://")
+}
+
+func normalizeWikiPath(dest, currentDir string) string {
+	if !strings.HasPrefix(dest, "/") {
+		if currentDir != "" && currentDir != "." {
+			dest = path.Join(currentDir, dest)
+		}
+		dest = path.Clean(dest)
+	}
+
+	return strings.TrimPrefix(dest, "/")
 }
 
 // NewService constructs a markdown renderer with GitHub-flavored markdown support.
