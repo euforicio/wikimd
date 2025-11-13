@@ -8,43 +8,43 @@
   /* Default to dark theme - use custom.css for theming (see THEMING_PLAN.md) */
   :root {
     /* Surface colors (RGB format for Tailwind compatibility) */
-    --surface: 26 26 26;
-    --surface-subtle: 36 36 36;
-    --surface-accent: 45 45 45;
-    --surface-elevated: 51 51 51;
-    --surface-border: 58 58 58;
+    --surface: 13 17 23; /* #0d1117 */
+    --surface-subtle: 22 27 34; /* #161b22 */
+    --surface-accent: 33 38 45; /* #21262d */
+    --surface-elevated: 22 27 34;
+    --surface-border: 48 54 61; /* #30363d */
 
     /* Colors - Background */
-    --color-bg-primary: #1a1a1a;
-    --color-bg-secondary: #242424;
-    --color-bg-tertiary: #2d2d2d;
-    --color-bg-code: #000000;
-    --color-bg-elevated: #333333;
+    --color-bg-primary: #0d1117;
+    --color-bg-secondary: #161b22;
+    --color-bg-tertiary: #21262d;
+    --color-bg-code: #161b22;
+    --color-bg-elevated: #161b22;
 
     /* Colors - Text */
-    --color-text-primary: #f1f5f9;
-    --color-text-secondary: #cbd5e1;
-    --color-text-muted: #94a3b8;
-    --color-text-link: #10b981;
-    --color-text-code: #e2e8f0;
+    --color-text-primary: #c9d1d9;
+    --color-text-secondary: #8b949e;
+    --color-text-muted: #8b949e;
+    --color-text-link: #58a6ff;
+    --color-text-code: #c9d1d9;
 
     /* Colors - Borders */
-    --color-border: #3a3a3a;
-    --color-border-dark: #2d2d2d;
-    --color-border-light: #475569;
+    --color-border: #30363d;
+    --color-border-dark: #21262d;
+    --color-border-light: #30363d;
 
     /* Colors - Accent */
-    --color-accent: #10b981;
-    --color-accent-hover: #059669;
-    --color-success: #10b981;
+    --color-accent: #58a6ff;
+    --color-accent-hover: #2f81f7;
+    --color-success: #238636;
     --color-warning: #f59e0b;
     --color-error: #ef4444;
 
     /* Colors - Sidebar */
-    --color-sidebar-bg: #242424;
-    --color-sidebar-text: #cbd5e1;
-    --color-sidebar-hover: #2d2d2d;
-    --color-sidebar-active: #10b981;
+    --color-sidebar-bg: #161b22;
+    --color-sidebar-text: #c9d1d9;
+    --color-sidebar-hover: #21262d;
+    --color-sidebar-active: #58a6ff;
 
     /* Typography */
     --font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -84,9 +84,9 @@
     --transition-slow: 350ms ease;
 
     /* Code blocks */
-    --code-bg: rgba(0, 0, 0, 0.5);
-    --code-border: rgba(71, 85, 105, 0.6);
-    --code-text: #e2e8f0;
+    --code-bg: #161b22;
+    --code-border: #30363d;
+    --code-text: #c9d1d9;
   }
 
   html {
@@ -160,29 +160,29 @@
 
   /* Blockquote styling for prose content */
   .prose-invert blockquote {
-    @apply border-l-4 border-l-amber-400 bg-amber-500/10 text-amber-50 rounded-r-lg;
-    padding-left: 1.5em;
-    padding-right: 1.5em;
-    padding-top: 0.75em;
-    padding-bottom: 0.75em;
+    border-left: 4px solid var(--color-border);
+    background-color: transparent;
+    color: var(--color-text-secondary);
+    padding: 0.75em 1.5em;
     font-style: normal;
   }
 
   .prose-invert blockquote p {
-    @apply text-amber-50/90;
+    color: var(--color-text-secondary);
   }
 
   /* Code block styles (dark theme default) */
   .prose-invert :where(code):not(:where([class~="not-prose"] *)) {
-    background-color: rgba(0, 0, 0, 0.5) !important;
-    color: #e2e8f0;
+    background-color: var(--code-bg) !important;
+    color: var(--color-text-code);
     padding: 0.125rem 0.375rem;
     border-radius: 0.25rem;
     font-size: 0.875em;
   }
 
   .prose-invert :where(pre):not(:where([class~="not-prose"] *)) {
-    background-color: #000000 !important;
+    background-color: var(--code-bg) !important;
+    border: 1px solid var(--color-border);
     border-radius: 0.5rem;
     position: relative;
   }
@@ -232,26 +232,43 @@
     color: #6ee7b7;
   }
 
-  /* Mermaid diagram controls */
+  /* Mermaid diagram shell */
   .mermaid-block {
     position: relative;
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--color-border);
+    background-color: transparent;
+  }
+
+  .mermaid-block .mermaid {
+    position: relative;
+    z-index: 1;
+    background: transparent !important;
+    color: var(--color-text-primary);
+  }
+
+  .mermaid-block svg {
+    width: 100%;
   }
 
   .mermaid-expand-button {
     position: absolute;
     top: 0.5rem;
     right: 0.5rem;
-    padding: 0.4rem;
-    border-radius: 9999px;
-    border: 1px solid rgba(148, 163, 184, 0.4);
-    background-color: rgba(15, 23, 42, 0.85);
-    color: #cbd5e1;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    border: 1px solid transparent;
+    background-color: transparent;
+    color: var(--color-text-muted);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     opacity: 0;
-    transition: opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    transition: opacity 0.2s ease, background-color 0.2s ease, color 0.2s ease;
     z-index: 5;
   }
 
@@ -267,9 +284,8 @@
 
   .mermaid-expand-button:hover,
   .mermaid-expand-button:focus-visible {
-    background-color: rgba(30, 41, 59, 0.95);
-    border-color: rgba(16, 185, 129, 0.6);
-    color: #f8fafc;
+    background-color: var(--color-bg-tertiary);
+    color: var(--color-text-primary);
     outline: none;
   }
 
@@ -626,5 +642,11 @@
 
   .prose :where(pre code):not(:where([class~="not-prose"] *)) {
     line-height: 1.4;
+  }
+
+  .prose :where(hr):not(:where([class~="not-prose"] *)) {
+    border-color: rgba(148, 163, 184, 0.35);
+    margin-top: 2.75rem;
+    margin-bottom: 1.75rem;
   }
 }

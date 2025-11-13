@@ -36,96 +36,28 @@ async function renderMermaid(element) {
       return;
     }
 
-    // Dark mode theme variables - comprehensive Gantt support
-    const darkThemeVars = {
-      // Core colors
-      primaryColor: "#1e293b",
-      primaryTextColor: "#f1f5f9",
-      primaryBorderColor: "#475569",
-
-      // Background
-      background: "#0f172a",
-      mainBkg: "#1e293b",
-      secondBkg: "#334155",
-
-      // Text - comprehensive coverage
-      titleColor: "#f1f5f9",
-      textColor: "#f1f5f9",
-      labelTextColor: "#f1f5f9",
-      darkTextColor: "#f1f5f9",
-      loopTextColor: "#f1f5f9",
-
-      // Gantt section backgrounds
-      sectionBkgColor: "#1e293b",
-      sectionBkgColor2: "#334155",
-      altSectionBkgColor: "#475569",
-
-      // Grid and lines
-      gridColor: "#475569",
-      lineColor: "#64748b",
-      todayLineColor: "#ef4444",
-
-      // Gantt text - CRITICAL for visibility
-      ganttSectionTextColor: "#f1f5f9",
-      taskTextColor: "#f1f5f9",
-      taskTextOutsideColor: "#f1f5f9",
-      taskTextLightColor: "#0f172a",
-      taskTextClickableColor: "#60a5fa",
-
-      // Axis labels
-      axisTextColor: "#f1f5f9",
-
-      // Tasks - different states
-      activeTaskBkgColor: "#3b82f6",
-      activeTaskBorderColor: "#2563eb",
-      doneTaskBkgColor: "#10b981",
-      doneTaskBorderColor: "#059669",
-      critBkgColor: "#ef4444",
-      critBorderColor: "#dc2626",
-      taskBkgColor: "#475569",
-      taskBorderColor: "#64748b",
-      excludeBkgColor: "#7f1d1d",
-
-      // Legend
-      legendTextColor: "#f1f5f9",
-
-      // Sequence diagram elements
-      actorBkg: "#475569",
-      actorBorder: "#64748b",
-      actorTextColor: "#f1f5f9",
-      actorLineColor: "#64748b",
-      signalColor: "#f1f5f9",
-      signalTextColor: "#f1f5f9",
-      labelBoxBkgColor: "#475569",
-      labelBoxBorderColor: "#64748b",
-      labelTextColor: "#f1f5f9",
-      loopTextColor: "#f1f5f9",
-      noteBkgColor: "#475569",
-      noteTextColor: "#f1f5f9",
-      noteBorderColor: "#64748b",
-      activationBkgColor: "#475569",
-      activationBorderColor: "#64748b",
-      sequenceNumberColor: "#0f172a",
-      errorBkgColor: "#991b1b",
-      errorTextColor: "#fecaca",
-      classText: "#f1f5f9",
-      mainContrastColor: "#f1f5f9",
-      secondaryColor: "#475569",
-      tertiaryColor: "#334155",
-
-      // Typography
-      fontFamily: "ui-sans-serif, system-ui, sans-serif",
+    // Theme variables for light mode to match GitHub/Gist style
+    const lightThemeVars = {
+      primaryColor: "#ffffff",
+      primaryTextColor: "#24292e",
+      primaryBorderColor: "#e1e4e8",
+      lineColor: "#d1d5da",
+      secondaryColor: "#f6f8fa",
+      tertiaryColor: "#f6f8fa",
+      fontFamily: "-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji",
       fontSize: "14px",
+    };
 
-      // Fill colors for different diagram types
-      fillType0: "#60a5fa",
-      fillType1: "#a78bfa",
-      fillType2: "#34d399",
-      fillType3: "#fbbf24",
-      fillType4: "#f87171",
-      fillType5: "#f472b6",
-      fillType6: "#2dd4bf",
-      fillType7: "#fb923c",
+    // A simplified dark theme
+    const darkThemeVars = {
+      primaryColor: "#1c2333",
+      primaryTextColor: "#f8fafc",
+      primaryBorderColor: "#30384d",
+      lineColor: "#3d475f",
+      secondaryColor: "#141a29",
+      tertiaryColor: "#141a29",
+      fontFamily: "Inter, ui-sans-serif, system-ui",
+      fontSize: "14px",
     };
 
     // Detect current theme
@@ -134,8 +66,8 @@ async function renderMermaid(element) {
     // Initialize mermaid with appropriate theme
     window.mermaid.initialize({
       startOnLoad: false,
-      theme: isDark ? "dark" : "default",
-      themeVariables: isDark ? darkThemeVars : {},
+      theme: isDark ? "dark" : "base",
+      themeVariables: isDark ? darkThemeVars : lightThemeVars,
     });
 
     // Process each mermaid element
