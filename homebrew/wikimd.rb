@@ -11,20 +11,20 @@ class Wikimd < Formula
   on_macos do
     if Hardware::CPU.arm?
       url "https://github.com/euforicio/wikimd/releases/download/v#{version}/wikimd_#{version}_Darwin_arm64.tar.gz"
-      sha256 "f411305b7064711b7bfcc092aafb9f8f5332eff99659ae82f4061260f238d60f"
+      sha256 "98ead2591f4f9681d0520e12d2be3a7518488fde86c7643a2ca77d44e48e9805"
     else
       url "https://github.com/euforicio/wikimd/releases/download/v#{version}/wikimd_#{version}_Darwin_x86_64.tar.gz"
-      sha256 "5b23438fc50f9d009063b11e8c4a9e088544cb4122daa2fa101948b4dd2fe7af"
+      sha256 "7ab2a05e92c5df4cd4fe8499324e13df0717ff93ac9b07a5f7b5cc9700a8d415"
     end
   end
 
   on_linux do
     if Hardware::CPU.arm?
       url "https://github.com/euforicio/wikimd/releases/download/v#{version}/wikimd_#{version}_Linux_arm64.tar.gz"
-      sha256 "3adf655bf9a34277394934be55d833df26a349678192dae8ec5461e482e98a4b"
+      sha256 "6b4c22441cc1ec7aa42e897d52747b1b1de919a5a57cd335df520f2395924912"
     else
       url "https://github.com/euforicio/wikimd/releases/download/v#{version}/wikimd_#{version}_Linux_x86_64.tar.gz"
-      sha256 "3bbae628580271d387ea8bd3d85dce292d74c2e0749ba0d31ac007c347371b92"
+      sha256 "2863beb2f651cd9d70c063d6b2c559718c291662fd865aa31a58c0fd5e7704e9"
     end
   end
 
