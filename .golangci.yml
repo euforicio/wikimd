@@ -11,14 +11,6 @@ run:
   # Go version to target (must match go.mod)
   go: "1.25"
 
-# Output configuration
-output:
-  formats:
-    text:
-      colors: true
-      print-issued-lines: true
-      print-linter-name: true
-
 # Linters configuration
 linters:
   enable:
@@ -47,7 +39,6 @@ linters:
     - goconst
     - gocritic
     - nilerr
-    - nolintlint
     - unconvert
     - wastedassign
 
@@ -55,6 +46,7 @@ linters:
     - exhaustive
     - funlen
     - lll
+    - nolintlint
 
   settings:
     errcheck:
@@ -111,35 +103,33 @@ linters:
         - name: unreachable-code
         - name: redefines-builtin-id
 
-  exclusions:
-    rules:
-      - path: _test\.go
-        linters:
-          - gocyclo
-          - errcheck
-          - gocognit
-          - gosec
-          - goconst
+# Issues configuration
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - gocyclo
+        - errcheck
+        - gocognit
+        - gosec
+        - goconst
 
-      - text: "weak cryptographic primitive"
-        linters:
-          - gosec
+    - text: "weak cryptographic primitive"
+      linters:
+        - gosec
 
-      - linters:
-          - staticcheck
-        text: "SA9003:"
+    - linters:
+        - staticcheck
+      text: "SA9003:"
 
-      - linters:
-          - lll
-        source: "^//go:generate "
+    - linters:
+        - lll
+      source: "^//go:generate "
 
 # Formatters configuration
 formatters:
   enable:
     - gofmt
     - goimports
-
-# Issues configuration
-issues:
-  max-issues-per-linter: 0
-  max-same-issues: 0
