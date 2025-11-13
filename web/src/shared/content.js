@@ -1,3 +1,19 @@
+const MERMAID_OVERLAY_VISIBLE_CLASS = "mermaid-overlay-open";
+const OVERLAY_MIN_SCALE = 0.25;
+const OVERLAY_MAX_SCALE = 5;
+const OVERLAY_WHEEL_SENSITIVITY = 0.002;
+
+let mermaidOverlayRoot = null;
+let mermaidOverlayContent = null;
+let mermaidOverlayViewport = null;
+let mermaidOverlayCanvas = null;
+let mermaidOverlayKeyListenerAttached = false;
+let mermaidOverlayPointerHandlersBound = false;
+
+const mermaidOverlayPointerState = new Map();
+const mermaidOverlayTransform = { scale: 1, x: 0, y: 0 };
+let lastPinchDistance = null;
+
 export function enhanceContent(element) {
   if (!element) {
     return;
@@ -124,6 +140,8 @@ async function renderMermaid(element) {
 
     // Process each mermaid element
     for (const el of mermaidElements) {
+      ensureMermaidContainer(el);
+
       // Skip if already processed
       if (el.dataset.mermaidProcessed === "true") {
         continue;
@@ -150,6 +168,491 @@ async function renderMermaid(element) {
     }
   } catch (err) {
     console.error("mermaid render failed:", err);
+  }
+}
+
+function ensureMermaidContainer(element) {
+  if (!element) {
+    return null;
+  }
+
+  let wrapper = element.parentElement;
+  const wrapperClass = "mermaid-block";
+
+  if (!wrapper || !wrapper.classList.contains(wrapperClass)) {
+    wrapper = document.createElement("div");
+    wrapper.className = wrapperClass;
+    if (element.parentNode) {
+      element.parentNode.insertBefore(wrapper, element);
+      wrapper.appendChild(element);
+    }
+  }
+
+  if (wrapper && !wrapper.querySelector(".mermaid-expand-button")) {
+    const button = createMermaidExpandButton(element);
+    wrapper.appendChild(button);
+  }
+
+  return wrapper;
+}
+
+function createMermaidExpandButton(targetElement) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "mermaid-expand-button";
+  button.setAttribute("aria-label", "Expand diagram");
+  button.setAttribute("title", "Expand diagram");
+  button.innerHTML = `
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="14 3 21 3 21 10"></polyline>
+      <line x1="21" y1="3" x2="14" y2="10"></line>
+      <polyline points="10 21 3 21 3 14"></polyline>
+      <line x1="3" y1="21" x2="10" y2="14"></line>
+    </svg>
+  `;
+
+  button.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    openMermaidOverlay(targetElement);
+  });
+
+  return button;
+}
+
+async function openMermaidOverlay(sourceElement) {
+  const { overlay, canvas } = ensureMermaidOverlayElements();
+  if (!overlay || !canvas) {
+    return;
+  }
+
+  canvas.innerHTML = "";
+  resetOverlayTransform();
+
+  const source = sourceElement?.dataset?.mermaidSource || sourceElement?.textContent || "";
+  if (!source.trim()) {
+    const error = document.createElement("div");
+    error.className = "mermaid-overlay-error";
+    error.textContent = "No diagram content available.";
+    canvas.appendChild(error);
+    showMermaidOverlay(overlay);
+    return;
+  }
+
+  const existingSvg = sourceElement.querySelector("svg");
+  if (existingSvg) {
+    const clonedWrapper = document.createElement("div");
+    clonedWrapper.className = "mermaid mermaid-overlay-diagram";
+    const clonedSvg = existingSvg.cloneNode(true);
+    clonedWrapper.appendChild(clonedSvg);
+    canvas.appendChild(clonedWrapper);
+    showMermaidOverlay(overlay);
+    scheduleOverlayFitToViewport();
+    return;
+  }
+
+  const overlayDiagram = document.createElement("div");
+  overlayDiagram.className = "mermaid mermaid-overlay-diagram";
+  overlayDiagram.textContent = source;
+  canvas.appendChild(overlayDiagram);
+
+  showMermaidOverlay(overlay);
+
+  try {
+    await window.mermaid.run({ nodes: [overlayDiagram] });
+    scheduleOverlayFitToViewport();
+  } catch (err) {
+    overlayDiagram.innerHTML = `<div class="mermaid-overlay-error">${err?.message || "Failed to render diagram"}</div>`;
+  }
+}
+
+function showMermaidOverlay(overlay) {
+  overlay.classList.add(MERMAID_OVERLAY_VISIBLE_CLASS);
+  overlay.setAttribute("aria-hidden", "false");
+
+  if (!mermaidOverlayKeyListenerAttached) {
+    window.addEventListener("keydown", handleOverlayKeydown);
+    mermaidOverlayKeyListenerAttached = true;
+  }
+}
+
+function ensureMermaidOverlayElements() {
+  if (mermaidOverlayRoot && mermaidOverlayContent && mermaidOverlayCanvas && mermaidOverlayViewport) {
+    return { overlay: mermaidOverlayRoot, content: mermaidOverlayContent, canvas: mermaidOverlayCanvas };
+  }
+
+  const overlay = document.createElement("div");
+  overlay.id = "mermaid-overlay";
+  overlay.className = "mermaid-overlay";
+  overlay.setAttribute("aria-hidden", "true");
+
+  const panel = document.createElement("div");
+  panel.className = "mermaid-overlay-panel";
+  panel.setAttribute("role", "dialog");
+  panel.setAttribute("aria-modal", "true");
+
+  const toolbar = document.createElement("div");
+  toolbar.className = "mermaid-overlay-toolbar";
+
+  const title = document.createElement("span");
+  title.className = "mermaid-overlay-title";
+  title.textContent = "Diagram preview";
+
+  const actions = document.createElement("div");
+  actions.className = "mermaid-overlay-actions";
+
+  const resetButton = document.createElement("button");
+  resetButton.type = "button";
+  resetButton.className = "mermaid-overlay-reset";
+  resetButton.setAttribute("aria-label", "Reset zoom and position");
+  resetButton.innerHTML = `
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="1 4 1 10 7 10"></polyline>
+      <polyline points="23 20 23 14 17 14"></polyline>
+      <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10"></path>
+      <path d="M3.51 15A9 9 0 0 0 18.36 18.36L23 14"></path>
+    </svg>
+    <span>Reset</span>
+  `;
+
+  const closeButton = document.createElement("button");
+  closeButton.type = "button";
+  closeButton.className = "mermaid-overlay-close";
+  closeButton.setAttribute("aria-label", "Close diagram");
+  closeButton.innerHTML = `
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18"></line>
+      <line x1="6" y1="6" x2="18" y2="18"></line>
+    </svg>
+  `;
+
+  const hint = document.createElement("p");
+  hint.className = "mermaid-overlay-hint";
+  hint.textContent = "Scroll or pinch to explore the full diagram.";
+
+  const content = document.createElement("div");
+  content.className = "mermaid-overlay-content";
+
+  const viewport = document.createElement("div");
+  viewport.className = "mermaid-overlay-viewport";
+
+  const canvas = document.createElement("div");
+  canvas.className = "mermaid-overlay-canvas";
+
+  viewport.appendChild(canvas);
+  content.appendChild(viewport);
+
+  actions.appendChild(resetButton);
+  actions.appendChild(closeButton);
+
+  toolbar.appendChild(title);
+  toolbar.appendChild(actions);
+  panel.appendChild(toolbar);
+  panel.appendChild(hint);
+  panel.appendChild(content);
+  overlay.appendChild(panel);
+
+  document.body.appendChild(overlay);
+
+  closeButton.addEventListener("click", () => closeMermaidOverlay());
+  resetButton.addEventListener("click", () => resetOverlayTransform());
+  overlay.addEventListener("click", (event) => {
+    if (event.target === overlay) {
+      closeMermaidOverlay();
+    }
+  });
+
+  mermaidOverlayRoot = overlay;
+  mermaidOverlayContent = content;
+  mermaidOverlayViewport = viewport;
+  mermaidOverlayCanvas = canvas;
+
+  bindOverlayInteractionHandlers();
+
+  return { overlay, content, canvas };
+}
+
+function bindOverlayInteractionHandlers() {
+  if (!mermaidOverlayViewport || mermaidOverlayPointerHandlersBound) {
+    return;
+  }
+
+  mermaidOverlayViewport.addEventListener("wheel", handleOverlayWheel, { passive: false });
+  mermaidOverlayViewport.addEventListener("pointerdown", handleOverlayPointerDown);
+  mermaidOverlayViewport.addEventListener("pointermove", handleOverlayPointerMove);
+  mermaidOverlayViewport.addEventListener("pointerup", handleOverlayPointerUp);
+  mermaidOverlayViewport.addEventListener("pointerleave", handleOverlayPointerUp);
+  mermaidOverlayViewport.addEventListener("pointercancel", handleOverlayPointerUp);
+
+  mermaidOverlayPointerHandlersBound = true;
+}
+
+function handleOverlayWheel(event) {
+  if (!mermaidOverlayViewport) {
+    return;
+  }
+
+  event.preventDefault();
+
+  if (event.ctrlKey || event.metaKey) {
+    const rect = mermaidOverlayViewport.getBoundingClientRect();
+    const point = {
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top,
+    };
+    const factor = Math.exp(-event.deltaY * OVERLAY_WHEEL_SENSITIVITY);
+    zoomOverlay(factor, point);
+  } else {
+    panOverlay(-event.deltaX, -event.deltaY);
+  }
+}
+
+function handleOverlayPointerDown(event) {
+  if (!mermaidOverlayViewport) {
+    return;
+  }
+
+  if (event.pointerType === "mouse" && event.button !== 0) {
+    return;
+  }
+
+  event.preventDefault();
+  if (typeof mermaidOverlayViewport.setPointerCapture === "function") {
+    try {
+      mermaidOverlayViewport.setPointerCapture(event.pointerId);
+    } catch {
+      // Ignore capture errors on unsupported elements
+    }
+  }
+  mermaidOverlayPointerState.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+  if (mermaidOverlayPointerState.size === 1) {
+    mermaidOverlayViewport.classList.add("is-dragging");
+  } else if (mermaidOverlayPointerState.size === 2) {
+    lastPinchDistance = getCurrentPinchDistance();
+  }
+}
+
+function handleOverlayPointerMove(event) {
+  if (!mermaidOverlayPointerState.has(event.pointerId)) {
+    return;
+  }
+
+  event.preventDefault();
+  const previous = mermaidOverlayPointerState.get(event.pointerId);
+  const current = { x: event.clientX, y: event.clientY };
+  mermaidOverlayPointerState.set(event.pointerId, current);
+
+  if (mermaidOverlayPointerState.size === 1 && previous) {
+    panOverlay(current.x - previous.x, current.y - previous.y);
+    return;
+  }
+
+  if (mermaidOverlayPointerState.size >= 2) {
+    const distance = getCurrentPinchDistance();
+    const center = getCurrentPinchCenter();
+    if (lastPinchDistance && distance && center) {
+      const factor = distance / lastPinchDistance;
+      zoomOverlay(factor, center);
+    }
+    lastPinchDistance = distance;
+  }
+}
+
+function handleOverlayPointerUp(event) {
+  if (!mermaidOverlayPointerState.has(event.pointerId)) {
+    return;
+  }
+
+  mermaidOverlayPointerState.delete(event.pointerId);
+
+  if (
+    mermaidOverlayViewport &&
+    typeof mermaidOverlayViewport.releasePointerCapture === "function"
+  ) {
+    try {
+      mermaidOverlayViewport.releasePointerCapture(event.pointerId);
+    } catch {
+      // noop - element may not have capture
+    }
+  }
+
+  if (mermaidOverlayPointerState.size === 0 && mermaidOverlayViewport) {
+    mermaidOverlayViewport.classList.remove("is-dragging");
+  }
+
+  if (mermaidOverlayPointerState.size < 2) {
+    lastPinchDistance = null;
+  }
+}
+
+function getCurrentPinchDistance() {
+  if (mermaidOverlayPointerState.size < 2) {
+    return null;
+  }
+
+  const [first, second] = Array.from(mermaidOverlayPointerState.values());
+  if (!first || !second) {
+    return null;
+  }
+
+  const dx = first.x - second.x;
+  const dy = first.y - second.y;
+  return Math.hypot(dx, dy);
+}
+
+function getCurrentPinchCenter() {
+  if (!mermaidOverlayViewport || mermaidOverlayPointerState.size < 2) {
+    return null;
+  }
+
+  const [first, second] = Array.from(mermaidOverlayPointerState.values());
+  if (!first || !second) {
+    return null;
+  }
+
+  const rect = mermaidOverlayViewport.getBoundingClientRect();
+  return {
+    x: (first.x + second.x) / 2 - rect.left,
+    y: (first.y + second.y) / 2 - rect.top,
+  };
+}
+
+function panOverlay(deltaX, deltaY) {
+  if (!mermaidOverlayCanvas) {
+    return;
+  }
+
+  mermaidOverlayTransform.x += deltaX;
+  mermaidOverlayTransform.y += deltaY;
+  applyOverlayTransform();
+}
+
+function zoomOverlay(factor, point) {
+  if (!mermaidOverlayCanvas || !mermaidOverlayViewport) {
+    return;
+  }
+
+  const previousScale = mermaidOverlayTransform.scale;
+  const nextScale = clampScale(previousScale * factor);
+  if (nextScale === previousScale) {
+    return;
+  }
+
+  const appliedFactor = nextScale / previousScale;
+  const focusPoint = point || {
+    x: mermaidOverlayViewport.clientWidth / 2,
+    y: mermaidOverlayViewport.clientHeight / 2,
+  };
+
+  mermaidOverlayTransform.x = focusPoint.x - appliedFactor * (focusPoint.x - mermaidOverlayTransform.x);
+  mermaidOverlayTransform.y = focusPoint.y - appliedFactor * (focusPoint.y - mermaidOverlayTransform.y);
+  mermaidOverlayTransform.scale = nextScale;
+  applyOverlayTransform();
+}
+
+function applyOverlayTransform() {
+  if (!mermaidOverlayCanvas) {
+    return;
+  }
+
+  const { scale, x, y } = mermaidOverlayTransform;
+  mermaidOverlayCanvas.style.transform = `matrix(${scale}, 0, 0, ${scale}, ${x}, ${y})`;
+}
+
+function resetOverlayTransform() {
+  mermaidOverlayTransform.scale = 1;
+  mermaidOverlayTransform.x = 0;
+  mermaidOverlayTransform.y = 0;
+  mermaidOverlayPointerState.clear();
+  lastPinchDistance = null;
+
+  if (mermaidOverlayViewport) {
+    mermaidOverlayViewport.classList.remove("is-dragging");
+  }
+
+  applyOverlayTransform();
+}
+
+function clampScale(value) {
+  return Math.min(Math.max(value, OVERLAY_MIN_SCALE), OVERLAY_MAX_SCALE);
+}
+
+function scheduleOverlayFitToViewport() {
+  if (!mermaidOverlayViewport) {
+    return;
+  }
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => fitOverlayDiagramToViewport());
+  });
+}
+
+function fitOverlayDiagramToViewport() {
+  if (!mermaidOverlayViewport || !mermaidOverlayCanvas) {
+    return;
+  }
+
+  const diagramSvg = mermaidOverlayCanvas.querySelector('.mermaid-overlay-diagram svg');
+  if (!diagramSvg) {
+    return;
+  }
+
+  const viewportRect = mermaidOverlayViewport.getBoundingClientRect();
+  const diagramRect = diagramSvg.getBoundingClientRect();
+
+  if (
+    viewportRect.width === 0 ||
+    viewportRect.height === 0 ||
+    diagramRect.width === 0 ||
+    diagramRect.height === 0
+  ) {
+    return;
+  }
+
+  const paddingFactor = 0.9;
+  const scaleToFit = Math.min(
+    viewportRect.width / diagramRect.width,
+    viewportRect.height / diagramRect.height,
+  ) * paddingFactor;
+
+  const targetScale = clampScale(Math.max(scaleToFit, 0.1));
+
+  const offsetX = diagramRect.left - viewportRect.left;
+  const offsetY = diagramRect.top - viewportRect.top;
+  const centerX = offsetX + diagramRect.width / 2;
+  const centerY = offsetY + diagramRect.height / 2;
+
+  mermaidOverlayTransform.scale = targetScale;
+  mermaidOverlayTransform.x = viewportRect.width / 2 - centerX * targetScale;
+  mermaidOverlayTransform.y = viewportRect.height / 2 - centerY * targetScale;
+
+  applyOverlayTransform();
+}
+
+function handleOverlayKeydown(event) {
+  if (event.key === "Escape") {
+    closeMermaidOverlay();
+  }
+}
+
+function closeMermaidOverlay() {
+  if (!mermaidOverlayRoot) {
+    return;
+  }
+
+  mermaidOverlayRoot.classList.remove(MERMAID_OVERLAY_VISIBLE_CLASS);
+  mermaidOverlayRoot.setAttribute("aria-hidden", "true");
+
+  if (mermaidOverlayCanvas) {
+    mermaidOverlayCanvas.innerHTML = "";
+  }
+
+  resetOverlayTransform();
+
+  if (mermaidOverlayKeyListenerAttached) {
+    window.removeEventListener("keydown", handleOverlayKeydown);
+    mermaidOverlayKeyListenerAttached = false;
   }
 }
 
