@@ -1,3 +1,4 @@
+// Package d2 provides server-side helpers for compiling D2 diagrams into SVG.
 package d2
 
 import (

@@ -48,6 +48,26 @@ linters:
     - lll
     - nolintlint
 
+  exclusions:
+    generated: lax
+    rules:
+      - path: _test\.go
+        linters:
+          - gocyclo
+          - errcheck
+          - gocognit
+          - gosec
+          - goconst
+      - text: "weak cryptographic primitive"
+        linters:
+          - gosec
+      - text: "SA9003:"
+        linters:
+          - staticcheck
+      - source: "^//go:generate "
+        linters:
+          - lll
+
   settings:
     errcheck:
       check-type-assertions: true
@@ -107,26 +127,6 @@ linters:
 issues:
   max-issues-per-linter: 0
   max-same-issues: 0
-  exclude-rules:
-    - path: _test\.go
-      linters:
-        - gocyclo
-        - errcheck
-        - gocognit
-        - gosec
-        - goconst
-
-    - text: "weak cryptographic primitive"
-      linters:
-        - gosec
-
-    - linters:
-        - staticcheck
-      text: "SA9003:"
-
-    - linters:
-        - lll
-      source: "^//go:generate "
 
 # Formatters configuration
 formatters:

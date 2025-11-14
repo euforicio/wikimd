@@ -110,12 +110,14 @@ func copyAttributes(src ast.Node, dst ast.Node) {
 }
 
 // D2Block is a rendered diagram placeholder included directly in the AST.
+//
+//nolint:govet // fieldalignment noise: layout must embed ast.BaseBlock for goldmark integration.
 type D2Block struct {
-	ast.BaseBlock
 	Source  string
 	SVG     string
 	Error   string
 	Runtime time.Duration
+	ast.BaseBlock
 }
 
 // KindD2Block represents a rendered D2 node kind.
@@ -162,14 +164,21 @@ func (r *D2BlockRenderer) renderD2Block(w util.BufWriter, _ []byte, node ast.Nod
 	if !entering {
 		return ast.WalkSkipChildren, nil
 	}
-	block := node.(*D2Block)
+	block, ok := node.(*D2Block)
+	if !ok {
+		return ast.WalkStop, fmt.Errorf("unexpected node %T", node)
+	}
 
 	var attrs strings.Builder
 	if block.Runtime > 0 {
-		fmt.Fprintf(&attrs, ` data-runtime-ms="%d"`, block.Runtime.Milliseconds())
+		if _, err := fmt.Fprintf(&attrs, ` data-runtime-ms="%d"`, block.Runtime.Milliseconds()); err != nil {
+			return ast.WalkStop, err
+		}
 	}
 	if block.Source != "" {
-		fmt.Fprintf(&attrs, ` data-source-b64="%s"`, encodeSource(block.Source))
+		if _, err := fmt.Fprintf(&attrs, ` data-source-b64="%s"`, encodeSource(block.Source)); err != nil {
+			return ast.WalkStop, err
+		}
 	}
 
 	if _, err := w.WriteString(`<div class="d2-block"` + attrs.String() + `>`); err != nil {
