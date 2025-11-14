@@ -49,6 +49,15 @@ lint:
 tidy:
 	GOFLAGS= go mod tidy
 
+.PHONY: chroma-css
+
+## Regenerate the Chroma CSS used by goldmark-highlighting.
+chroma-css:
+	@set -euo pipefail; \
+	mkdir -p static/vendor web/src/styles; \
+	GOFLAGS= go run ./tools/generate-chroma-css > static/vendor/chroma-github-dark.min.css; \
+	cp static/vendor/chroma-github-dark.min.css web/src/styles/chroma-github-dark.css
+
 ## Build the Tailwind + Bun bundles once (auto-downloads vendors).
 web-build:
 	mkdir -p static/css static/js

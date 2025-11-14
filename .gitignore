@@ -51,3 +51,4 @@ static/js/chunks/
 static/vendor/*.js
 static/vendor/*.css
 !static/vendor/.gitkeep
+!static/vendor/chroma-github-dark.min.css
