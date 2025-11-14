@@ -73,6 +73,7 @@ wikimd turns any folder full of Markdown files into an elegant wiki that stays i
 - **🎨 Notion-inspired UI** — Resizable navigation tree, breadcrumb-aware page view, fully customizable CSS theming system.
 - **⚡ Keyboard-friendly search** — ripgrep-powered full-text search exposed through a Cmd/Ctrl+K palette with inline results.
 - **✍️ Markdown superpowers** — GitHub-flavored Markdown, Mermaid.js diagrams, syntax highlighting, and frontmatter metadata.
+- **🧩 Diagram power** — First-class Mermaid plus server-side, dark-themed D2 rendering that honors whatever layout engine you specify in the diagram itself, so visuals survive static exports.
 - **🚀 Ship anywhere** — Bundled Tailwind assets and a static export CLI ready for Netlify, GitHub Pages, or offline archives.
 - **🔗 Deep-linkable docs** — Automatic heading permalinks and live breadcrumb updates make sharing sections effortless.
 - **👥 Built for teams** — REST endpoints for create/rename/delete, change notifications, and optional JSON APIs for integrations.
@@ -251,6 +252,7 @@ Supported `format` values: `html`, `pdf`, `markdown`, `txt`. Responses include a
 - GitHub-flavored Markdown extensions (tables, task lists, strikethrough, autolinks).
 - YAML frontmatter for `title`, `description`, `tags`, and arbitrary metadata.
 - Mermaid.js diagrams themed for dark/light modes with automatic re-rendering on theme changes.
+- Server-side rendered D2 diagrams that ship in a dark palette by default, respect in-file layout directives (dagre, ELK, TALA, etc.), and embed SVG for static exports and PDFs.
 - Automatic breadcrumb generation and friendly document titles derived from file paths.
 - Automatic heading permalinks for copy-and-share anchors on every section.
 - Raw HTML support for advanced layouts and styling (safe for local-only wikis with trusted content).

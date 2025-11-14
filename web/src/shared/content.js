@@ -22,6 +22,32 @@ export function enhanceContent(element) {
   normaliseInternalLinks(element);
   addCopyButtonsToCodeBlocks(element);
   renderMermaid(element);
+  enhanceD2(element);
+}
+
+function enhanceD2(element) {
+  if (!element) {
+    return;
+  }
+
+  const d2Blocks = element.querySelectorAll(".d2-block");
+  if (!d2Blocks || d2Blocks.length === 0) {
+    return;
+  }
+
+  d2Blocks.forEach((block) => {
+    if (!block || block.dataset.d2Enhanced === "true") {
+      return;
+    }
+
+    block.dataset.d2Enhanced = "true";
+    block.style.position = block.style.position || "relative";
+
+    if (!block.querySelector(".diagram-expand-button")) {
+      const button = createDiagramExpandButton(() => openD2Overlay(block));
+      block.appendChild(button);
+    }
+  });
 }
 
 async function renderMermaid(element) {
@@ -129,9 +155,13 @@ function ensureMermaidContainer(element) {
 }
 
 function createMermaidExpandButton(targetElement) {
+  return createDiagramExpandButton(() => openMermaidOverlay(targetElement));
+}
+
+function createDiagramExpandButton(onTrigger) {
   const button = document.createElement("button");
   button.type = "button";
-  button.className = "mermaid-expand-button";
+  button.className = "mermaid-expand-button diagram-expand-button";
   button.setAttribute("aria-label", "Expand diagram");
   button.setAttribute("title", "Expand diagram");
   button.innerHTML = `
@@ -146,7 +176,7 @@ function createMermaidExpandButton(targetElement) {
   button.addEventListener("click", (event) => {
     event.preventDefault();
     event.stopPropagation();
-    openMermaidOverlay(targetElement);
+    onTrigger?.(event);
   });
 
   return button;
@@ -196,6 +226,34 @@ async function openMermaidOverlay(sourceElement) {
   } catch (err) {
     overlayDiagram.innerHTML = `<div class="mermaid-overlay-error">${err?.message || "Failed to render diagram"}</div>`;
   }
+}
+
+function openD2Overlay(sourceBlock) {
+  const { overlay, canvas } = ensureMermaidOverlayElements();
+  if (!overlay || !canvas) {
+    return;
+  }
+
+  canvas.innerHTML = "";
+  resetOverlayTransform();
+
+  const svg = sourceBlock?.querySelector("svg");
+  if (!svg) {
+    const error = document.createElement("div");
+    error.className = "mermaid-overlay-error";
+    error.textContent = "Diagram SVG is not available.";
+    canvas.appendChild(error);
+    showMermaidOverlay(overlay);
+    return;
+  }
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "mermaid-overlay-diagram d2-overlay-diagram";
+  wrapper.appendChild(svg.cloneNode(true));
+  canvas.appendChild(wrapper);
+
+  showMermaidOverlay(overlay);
+  scheduleOverlayFitToViewport();
 }
 
 function showMermaidOverlay(overlay) {
@@ -287,7 +345,7 @@ function ensureMermaidOverlayElements() {
   document.body.appendChild(overlay);
 
   closeButton.addEventListener("click", () => closeMermaidOverlay());
-  resetButton.addEventListener("click", () => resetOverlayTransform());
+  resetButton.addEventListener("click", () => resetOverlayTransform({ fitToViewport: true }));
   overlay.addEventListener("click", (event) => {
     if (event.target === overlay) {
       closeMermaidOverlay();
@@ -492,7 +550,8 @@ function applyOverlayTransform() {
   mermaidOverlayCanvas.style.transform = `matrix(${scale}, 0, 0, ${scale}, ${x}, ${y})`;
 }
 
-function resetOverlayTransform() {
+function resetOverlayTransform(options = {}) {
+  const { fitToViewport = false } = options;
   mermaidOverlayTransform.scale = 1;
   mermaidOverlayTransform.x = 0;
   mermaidOverlayTransform.y = 0;
@@ -504,6 +563,10 @@ function resetOverlayTransform() {
   }
 
   applyOverlayTransform();
+
+  if (fitToViewport) {
+    scheduleOverlayFitToViewport();
+  }
 }
 
 function clampScale(value) {

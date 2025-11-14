@@ -18,11 +18,13 @@ import (
 	"github.com/yuin/goldmark/ast"
 	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/parser"
+	"github.com/yuin/goldmark/renderer"
 	htmlrenderer "github.com/yuin/goldmark/renderer/html"
 	"github.com/yuin/goldmark/text"
 	"github.com/yuin/goldmark/util"
 	"go.abhg.dev/goldmark/anchor"
 
+	d2renderer "github.com/euforicio/wikimd/internal/renderer/d2"
 	"github.com/euforicio/wikimd/internal/renderer/transform"
 )
 
@@ -156,6 +158,12 @@ func NewService(logger *slog.Logger) *Service {
 		logger = slog.Default()
 	}
 
+	d2Service, err := d2renderer.New(context.Background(), logger.With("component", "d2"), nil)
+	if err != nil {
+		logger.Warn("d2: diagrams disabled", "err", err)
+		d2Service = nil
+	}
+
 	highlight := highlighting.NewHighlighting(
 		highlighting.WithStyle("github-dark"),
 		highlighting.WithFormatOptions(
@@ -164,6 +172,23 @@ func NewService(logger *slog.Logger) *Service {
 		),
 		highlighting.WithWrapperRenderer(transform.MermaidWrapper()),
 	)
+
+	transformers := []util.PrioritizedValue{
+		util.Prioritized(&linkTransformer{}, 100),
+	}
+	if d2Service != nil {
+		transformers = append(transformers, util.Prioritized(transform.NewD2Transformer(d2Service, logger), 90))
+	}
+
+	rendererOptions := []renderer.Option{
+		htmlrenderer.WithUnsafe(),
+		htmlrenderer.WithXHTML(),
+	}
+	if d2Service != nil {
+		rendererOptions = append(rendererOptions, renderer.WithNodeRenderers(
+			util.Prioritized(transform.NewD2BlockRenderer(), 90),
+		))
+	}
 
 	md := goldmark.New(
 		goldmark.WithExtensions(
@@ -178,14 +203,13 @@ func NewService(logger *slog.Logger) *Service {
 			parser.WithAutoHeadingID(),
 			parser.WithAttribute(), // Enable attribute syntax for blocks and inlines
 			parser.WithASTTransformers(
-				util.Prioritized(&linkTransformer{}, 100),
+				transformers...,
 			),
 		),
 		goldmark.WithRendererOptions(
 			// Enable unsafe HTML rendering to allow raw HTML like GitHub does.
 			// This is safe for local-only wikis where all content is trusted.
-			htmlrenderer.WithUnsafe(),
-			htmlrenderer.WithXHTML(),
+			rendererOptions...,
 		),
 	)
 

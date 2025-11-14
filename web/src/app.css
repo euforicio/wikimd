@@ -144,6 +144,26 @@
   .search-result svg {
     pointer-events: none;
   }
+
+  .d2-block {
+    @apply relative my-6 overflow-auto rounded-2xl border border-surface-border/60 bg-surface-accent/70 p-4 shadow-inner transition-shadow dark:border-slate-800/80 dark:bg-slate-900/70;
+    width: 100%;
+    max-width: min(100%, 70rem);
+    margin-left: auto;
+    margin-right: auto;
+    max-height: 32rem;
+  }
+
+  .d2-block svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 28rem;
+  }
+
+  .d2-error {
+    @apply rounded-xl border border-red-500/60 bg-red-500/20 p-4 text-sm text-red-50;
+  }
 }
 
 @layer utilities {
@@ -254,7 +274,8 @@
     width: 100%;
   }
 
-  .mermaid-expand-button {
+  .mermaid-expand-button,
+  .diagram-expand-button {
     position: absolute;
     top: 0.5rem;
     right: 0.5rem;
@@ -272,25 +293,29 @@
     z-index: 5;
   }
 
-  .mermaid-expand-button svg {
+  .mermaid-expand-button svg,
+  .diagram-expand-button svg {
     pointer-events: none;
   }
 
-  .mermaid-block:hover .mermaid-expand-button,
-  .mermaid-block:focus-within .mermaid-expand-button,
-  .mermaid-expand-button:focus-visible {
+  .mermaid-block:hover .diagram-expand-button,
+  .mermaid-block:focus-within .diagram-expand-button,
+  .d2-block:hover .diagram-expand-button,
+  .d2-block:focus-within .diagram-expand-button,
+  .diagram-expand-button:focus-visible {
     opacity: 1;
   }
 
   .mermaid-expand-button:hover,
-  .mermaid-expand-button:focus-visible {
+  .diagram-expand-button:hover,
+  .diagram-expand-button:focus-visible {
     background-color: var(--color-bg-tertiary);
     color: var(--color-text-primary);
     outline: none;
   }
 
   @media (hover: none) {
-    .mermaid-expand-button {
+    .diagram-expand-button {
       opacity: 1;
     }
   }

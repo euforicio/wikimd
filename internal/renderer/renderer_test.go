@@ -73,6 +73,26 @@ func TestRenderWithMetadataAndMermaid(t *testing.T) {
 	}
 }
 
+func TestRenderD2Diagram(t *testing.T) {
+	t.Parallel()
+	svc := renderer.NewService(slog.New(slog.NewTextHandler(io.Discard, &slog.HandlerOptions{Level: slog.LevelError})))
+
+	content := []byte("```d2\napp: App\nstore: DB\napp -> store\n```\n")
+	modTime := time.Unix(2_500, 0)
+
+	doc, err := svc.Render(context.Background(), "docs/d2.md", modTime, content)
+	if err != nil {
+		t.Fatalf("Render returned error: %v", err)
+	}
+
+	if !strings.Contains(doc.HTML, `class="d2-block"`) {
+		t.Fatalf("expected d2 block wrapper, got %s", doc.HTML)
+	}
+	if !strings.Contains(doc.HTML, "<svg") {
+		t.Fatalf("expected rendered svg output, got %s", doc.HTML)
+	}
+}
+
 func TestRenderCaching(t *testing.T) {
 	t.Parallel()
 	svc := renderer.NewService(slog.New(slog.NewTextHandler(io.Discard, &slog.HandlerOptions{Level: slog.LevelError})))
