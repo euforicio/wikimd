@@ -264,7 +264,7 @@ func directoryDisplayName(root string, rel string) string {
 	if rel == "" {
 		return filepath.Base(root)
 	}
-	return fileDisplayName(rel)
+	return fileDisplayName(filepath.Base(rel))
 }
 
 func slugify(path string) string {
