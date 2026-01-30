@@ -6,8 +6,6 @@ require (
 	github.com/alecthomas/chroma/v2 v2.20.0
 	github.com/fsnotify/fsnotify v1.9.0
 	github.com/spf13/pflag v1.0.10
-	github.com/srwiley/oksvg v0.0.0-20221011165216-be6e8873101c
-	github.com/srwiley/rasterx v0.0.0-20220730225603-2ab79fcdd4ef
 	github.com/stephenafamo/goldmark-pdf v0.4.1
 	github.com/yuin/goldmark v1.7.13
 	github.com/yuin/goldmark-highlighting/v2 v2.0.0-20230729083705-37449abec8cc
