@@ -14,7 +14,7 @@ EXPORT_ARGS ?=
 
 DOCKER_IMAGE ?= wikimd:latest
 
-.PHONY: dev build web-build lint tidy test export release docker
+.PHONY: dev build web-build lint tidy test export release docker setup check
 
 ## Run the dev server with live reload hooks (Tailwind + Bun watchers).
 dev:
@@ -76,3 +76,11 @@ release: web-build
 ## Build a container image containing the wikimd server binary.
 docker: web-build
 	docker build --build-arg VERSION=$(VERSION) --build-arg COMMIT=$(COMMIT) --build-arg BUILD_DATE=$(BUILD_DATE) -t $(DOCKER_IMAGE) .
+
+## Setup development environment (install git hooks).
+setup:
+	./scripts/setup-hooks.sh
+
+## Run all CI checks locally (lint + test).
+check: web-build lint test
+	@echo "All checks passed!"
