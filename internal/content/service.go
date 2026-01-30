@@ -53,8 +53,9 @@ type Service struct {
 }
 
 type subscriber struct {
-	ctx context.Context
-	ch  chan Event
+	ctx    context.Context
+	ch     chan Event
+	closed sync.Once
 }
 
 // Options configures the content service.
@@ -212,13 +213,7 @@ func (s *Service) Subscribe(ctx context.Context) <-chan Event {
 		case <-ctx.Done():
 		case <-s.ctx.Done():
 		}
-
-		s.subsMu.Lock()
-		if sub, ok := s.subscribers[id]; ok {
-			close(sub.ch)
-			delete(s.subscribers, id)
-		}
-		s.subsMu.Unlock()
+		s.removeSubscriber(id)
 	}()
 
 	return ch
@@ -340,7 +335,9 @@ func (s *Service) broadcast(evt Event) {
 func (s *Service) removeSubscriber(id uint64) {
 	s.subsMu.Lock()
 	if sub, ok := s.subscribers[id]; ok {
-		close(sub.ch)
+		sub.closed.Do(func() {
+			close(sub.ch)
+		})
 		delete(s.subscribers, id)
 	}
 	s.subsMu.Unlock()

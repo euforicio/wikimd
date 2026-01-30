@@ -3,16 +3,23 @@ const OVERLAY_MIN_SCALE = 0.25;
 const OVERLAY_MAX_SCALE = 5;
 const OVERLAY_WHEEL_SENSITIVITY = 0.002;
 
+// Rendering configuration
+const MERMAID_BATCH_SIZE = 3; // Render N diagrams concurrently
+const MERMAID_RENDER_DELAY = 10; // ms between batches to yield to main thread
+
 let mermaidOverlayRoot = null;
 let mermaidOverlayContent = null;
 let mermaidOverlayViewport = null;
 let mermaidOverlayCanvas = null;
 let mermaidOverlayKeyListenerAttached = false;
 let mermaidOverlayPointerHandlersBound = false;
+let mermaidInitialized = false;
+let mermaidObserver = null;
 
 const mermaidOverlayPointerState = new Map();
 const mermaidOverlayTransform = { scale: 1, x: 0, y: 0 };
 let lastPinchDistance = null;
+const pendingMermaidRenders = new Set();
 
 export function enhanceContent(element) {
   if (!element) {
@@ -50,6 +57,130 @@ function enhanceD2(element) {
   });
 }
 
+// Theme variables for mermaid
+const lightThemeVars = {
+  primaryColor: "#ffffff",
+  primaryTextColor: "#24292e",
+  primaryBorderColor: "#e1e4e8",
+  lineColor: "#d1d5da",
+  secondaryColor: "#f6f8fa",
+  tertiaryColor: "#f6f8fa",
+  fontFamily: "-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji",
+  fontSize: "14px",
+};
+
+const darkThemeVars = {
+  primaryColor: "#1c2333",
+  primaryTextColor: "#f8fafc",
+  primaryBorderColor: "#30384d",
+  lineColor: "#3d475f",
+  secondaryColor: "#141a29",
+  tertiaryColor: "#141a29",
+  fontFamily: "Inter, ui-sans-serif, system-ui",
+  fontSize: "14px",
+};
+
+/**
+ * Initialize mermaid once with current theme settings
+ */
+function initializeMermaid() {
+  if (!window.mermaid) return;
+
+  const isDark = document.documentElement.classList.contains("dark");
+  window.mermaid.initialize({
+    startOnLoad: false,
+    theme: isDark ? "dark" : "base",
+    themeVariables: isDark ? darkThemeVars : lightThemeVars,
+  });
+  mermaidInitialized = true;
+}
+
+/**
+ * Render a single mermaid element
+ */
+async function renderSingleMermaid(el) {
+  if (!el || el.dataset.mermaidProcessed === "true") return;
+
+  const mermaidCode = el.textContent.trim();
+  if (!mermaidCode) return;
+
+  el.dataset.mermaidSource = mermaidCode;
+
+  try {
+    await window.mermaid.run({ nodes: [el] });
+    el.dataset.mermaidProcessed = "true";
+  } catch (err) {
+    console.error("mermaid render failed:", err);
+    el.innerHTML = `<div style="color: red; border: 1px solid red; padding: 10px; border-radius: 4px;">
+      <strong>Mermaid Error:</strong><br>
+      ${err.message || "Failed to render diagram"}
+    </div>`;
+  }
+}
+
+/**
+ * Render mermaid elements in batches to prevent main thread blocking
+ */
+async function renderMermaidBatch(elements) {
+  if (!window.mermaid || elements.length === 0) return;
+
+  if (!mermaidInitialized) {
+    initializeMermaid();
+  }
+
+  // Process in batches
+  for (let i = 0; i < elements.length; i += MERMAID_BATCH_SIZE) {
+    const batch = elements.slice(i, i + MERMAID_BATCH_SIZE);
+
+    // Render batch concurrently
+    await Promise.all(batch.map(el => renderSingleMermaid(el)));
+
+    // Yield to main thread between batches
+    if (i + MERMAID_BATCH_SIZE < elements.length) {
+      await new Promise(resolve => setTimeout(resolve, MERMAID_RENDER_DELAY));
+    }
+  }
+}
+
+/**
+ * Create IntersectionObserver for lazy loading diagrams
+ */
+function getMermaidObserver() {
+  if (mermaidObserver) return mermaidObserver;
+
+  mermaidObserver = new IntersectionObserver(
+    (entries) => {
+      const toRender = [];
+
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          const el = entry.target;
+          mermaidObserver.unobserve(el);
+          pendingMermaidRenders.delete(el);
+
+          if (el.dataset.mermaidProcessed !== "true") {
+            toRender.push(el);
+          }
+        }
+      }
+
+      if (toRender.length > 0) {
+        renderMermaidBatch(toRender);
+      }
+    },
+    {
+      // Start rendering when diagram is within 200px of viewport
+      rootMargin: "200px 0px",
+      threshold: 0,
+    }
+  );
+
+  return mermaidObserver;
+}
+
+/**
+ * Main mermaid rendering function with lazy loading support
+ */
 async function renderMermaid(element) {
   if (!window.mermaid || !element) {
     return;
@@ -57,71 +188,46 @@ async function renderMermaid(element) {
 
   try {
     const mermaidElements = element.querySelectorAll(".mermaid");
-
     if (mermaidElements.length === 0) {
       return;
     }
 
-    // Theme variables for light mode to match GitHub/Gist style
-    const lightThemeVars = {
-      primaryColor: "#ffffff",
-      primaryTextColor: "#24292e",
-      primaryBorderColor: "#e1e4e8",
-      lineColor: "#d1d5da",
-      secondaryColor: "#f6f8fa",
-      tertiaryColor: "#f6f8fa",
-      fontFamily: "-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji",
-      fontSize: "14px",
-    };
+    if (!mermaidInitialized) {
+      initializeMermaid();
+    }
 
-    // A simplified dark theme
-    const darkThemeVars = {
-      primaryColor: "#1c2333",
-      primaryTextColor: "#f8fafc",
-      primaryBorderColor: "#30384d",
-      lineColor: "#3d475f",
-      secondaryColor: "#141a29",
-      tertiaryColor: "#141a29",
-      fontFamily: "Inter, ui-sans-serif, system-ui",
-      fontSize: "14px",
-    };
+    const observer = getMermaidObserver();
+    const immediateRender = [];
+    const deferredRender = [];
 
-    // Detect current theme
-    const isDark = document.documentElement.classList.contains("dark");
-
-    // Initialize mermaid with appropriate theme
-    window.mermaid.initialize({
-      startOnLoad: false,
-      theme: isDark ? "dark" : "base",
-      themeVariables: isDark ? darkThemeVars : lightThemeVars,
-    });
-
-    // Process each mermaid element
+    // Categorize diagrams: above-fold vs below-fold
     for (const el of mermaidElements) {
       ensureMermaidContainer(el);
 
-      // Skip if already processed
       if (el.dataset.mermaidProcessed === "true") {
         continue;
       }
 
-      const mermaidCode = el.textContent.trim();
-      if (!mermaidCode) {
-        continue;
+      const rect = el.getBoundingClientRect();
+      const isInViewport = rect.top < window.innerHeight + 200;
+
+      if (isInViewport) {
+        immediateRender.push(el);
+      } else {
+        deferredRender.push(el);
       }
+    }
 
-      // Store original code in data attribute for re-rendering
-      el.dataset.mermaidSource = mermaidCode;
+    // Render visible diagrams immediately in batches
+    if (immediateRender.length > 0) {
+      await renderMermaidBatch(immediateRender);
+    }
 
-      try {
-        await window.mermaid.run({ nodes: [el] });
-        el.dataset.mermaidProcessed = "true";
-      } catch (err) {
-        console.error("mermaid render failed:", err);
-        el.innerHTML = `<div style="color: red; border: 1px solid red; padding: 10px; border-radius: 4px;">
-          <strong>Mermaid Error:</strong><br>
-          ${err.message || "Failed to render diagram"}
-        </div>`;
+    // Set up lazy loading for below-fold diagrams
+    for (const el of deferredRender) {
+      if (!pendingMermaidRenders.has(el)) {
+        pendingMermaidRenders.add(el);
+        observer.observe(el);
       }
     }
   } catch (err) {
@@ -656,6 +762,9 @@ export function reRenderMermaid() {
   if (!window.mermaid) {
     return;
   }
+
+  // Reset initialization to pick up new theme
+  mermaidInitialized = false;
 
   const containers = document.querySelectorAll("[data-mermaid-source]");
 

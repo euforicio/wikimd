@@ -1,4 +1,4 @@
-import { watch, existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
+import { watch, existsSync, mkdirSync, readFileSync, writeFileSync, rmSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 
@@ -82,6 +82,15 @@ async function downloadVendors() {
   }
 }
 
+function cleanChunks() {
+  const chunksDir = resolve(__dirname, "../static/js/chunks");
+  if (existsSync(chunksDir)) {
+    console.log("🧹 Cleaning stale chunks...");
+    rmSync(chunksDir, { recursive: true, force: true });
+    mkdirSync(chunksDir, { recursive: true });
+  }
+}
+
 async function build() {
   console.log(`Building${isWatch ? " (watch mode)" : ""}...`);
   try {
@@ -124,5 +133,6 @@ if (isWatch) {
   });
 } else {
   await downloadVendors();
+  cleanChunks(); // Clean stale chunks before production build
   await build();
 }

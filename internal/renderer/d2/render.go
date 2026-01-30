@@ -34,6 +34,7 @@ var (
 // Layout choices are left entirely to the source diagram (via D2 config blocks)
 // or environment variables such as D2_LAYOUT.
 type Renderer struct {
+	ruler   *textmeasure.Ruler
 	logger  *slog.Logger
 	timeout time.Duration
 }
@@ -57,9 +58,16 @@ func New(_ context.Context, logger *slog.Logger, opts *Options) (*Renderer, erro
 		cfg.Timeout = opts.Timeout
 	}
 
+	// Initialize ruler once - it loads font metrics which is expensive
+	ruler, err := textmeasure.NewRuler()
+	if err != nil {
+		return nil, fmt.Errorf("init ruler: %w", err)
+	}
+
 	return &Renderer{
 		logger:  logger,
 		timeout: cfg.Timeout,
+		ruler:   ruler,
 	}, nil
 }
 
@@ -77,11 +85,6 @@ func (r *Renderer) Render(ctx context.Context, source string) (Result, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
-	ruler, err := textmeasure.NewRuler()
-	if err != nil {
-		return Result{}, fmt.Errorf("init ruler: %w", err)
-	}
-
 	themeID := d2themescatalog.DarkFlagshipTerrastruct.ID
 	darkThemeID := d2themescatalog.DarkFlagshipTerrastruct.ID
 	pad := int64(d2svg.DEFAULT_PADDING)
@@ -93,7 +96,7 @@ func (r *Renderer) Render(ctx context.Context, source string) (Result, error) {
 
 	start := time.Now()
 	compileOpts := &d2lib.CompileOptions{
-		Ruler:          ruler,
+		Ruler:          r.ruler,
 		LayoutResolver: r.layoutResolver,
 	}
 

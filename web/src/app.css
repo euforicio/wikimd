@@ -270,6 +270,19 @@
     color: var(--color-text-primary);
   }
 
+  /* Loading placeholder for unrendered diagrams */
+  .mermaid-block .mermaid:not([data-mermaid-processed="true"]):not(:has(svg)) {
+    min-height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-muted);
+    font-family: ui-monospace, monospace;
+    font-size: 0.75rem;
+    white-space: pre-wrap;
+    opacity: 0.5;
+  }
+
   .mermaid-block svg {
     width: 100%;
   }

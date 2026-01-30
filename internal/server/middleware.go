@@ -7,8 +7,18 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
+
+// gzipWriterPool reuses gzip writers to reduce memory allocations.
+// gzip.Writer has ~256KB internal buffers that shouldn't be allocated per-request.
+var gzipWriterPool = sync.Pool{
+	New: func() any {
+		gz, _ := gzip.NewWriterLevel(nil, gzip.DefaultCompression)
+		return gz
+	},
+}
 
 // middleware is a function that wraps an http.Handler.
 type middleware func(http.Handler) http.Handler
@@ -46,11 +56,13 @@ func gzipMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		gz := gzip.NewWriter(w)
+		gz := gzipWriterPool.Get().(*gzip.Writer) //nolint:errcheck // pool always returns *gzip.Writer
+		gz.Reset(w)
 		defer func() {
 			if err := gz.Close(); err != nil {
 				slog.Error("failed to close gzip writer", slog.Any("err", err))
 			}
+			gzipWriterPool.Put(gz)
 		}()
 
 		gzw := &gzipResponseWriter{

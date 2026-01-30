@@ -74,6 +74,13 @@ type Service struct {
 // contextKey for storing document path
 var docPathKey = parser.NewContextKey()
 
+// bufferPool reuses byte buffers to reduce GC pressure on the rendering hot path
+var bufferPool = sync.Pool{
+	New: func() any {
+		return bytes.NewBuffer(make([]byte, 0, 16*1024)) // 16KB initial capacity
+	},
+}
+
 // linkTransformer rewrites .md links to /page/ routes and image paths to /media/ routes
 type linkTransformer struct{}
 
@@ -236,7 +243,10 @@ func (s *Service) Render(_ context.Context, path string, modTime time.Time, cont
 
 	parserCtx := parser.NewContext()
 	parserCtx.Set(docPathKey, path)
-	buf := bytes.NewBuffer(nil)
+
+	buf := bufferPool.Get().(*bytes.Buffer) //nolint:errcheck // pool always returns *bytes.Buffer
+	buf.Reset()
+	defer bufferPool.Put(buf)
 
 	if err := s.md.Convert(content, buf, parser.WithContext(parserCtx)); err != nil {
 		return Document{}, fmt.Errorf("render markdown: %w", err)
