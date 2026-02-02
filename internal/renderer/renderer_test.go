@@ -71,6 +71,18 @@ func TestRenderWithMetadataAndMermaid(t *testing.T) {
 	if !doc.Modified.Equal(modTime) {
 		t.Fatalf("expected modified timestamp to match, got %v", doc.Modified)
 	}
+
+	// Code blocks should be wrapped with copy button (server-side rendering)
+	if !strings.Contains(html, `<div class="code-block-wrapper">`) {
+		t.Fatalf("expected code-block-wrapper div in HTML for Go code block, got %s", html)
+	}
+	if !strings.Contains(html, `<button class="code-copy-button"`) {
+		t.Fatalf("expected code-copy-button in HTML for Go code block, got %s", html)
+	}
+	// Mermaid blocks should NOT have copy button wrapper
+	if strings.Contains(html, `<div class="code-block-wrapper"><div class="mermaid">`) {
+		t.Fatalf("mermaid blocks should not be wrapped with code-block-wrapper, got %s", html)
+	}
 }
 
 func TestRenderD2Diagram(t *testing.T) {

@@ -87,7 +87,9 @@ function hideSearch() {
 function bindPageLifecycle(pendingScrollRef) {
   document.body.addEventListener("pageLoaded", (event) => {
     const detail = event.detail || {};
-    setCurrentPath(detail.path || "");
+    const path = detail.path || "";
+    setCurrentPath(path);
+    highlightActive(path);
     const region = getPageRegion();
     enhanceContent(region);
     const scroller = getScrollContainer();

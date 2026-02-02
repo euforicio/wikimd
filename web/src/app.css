@@ -214,6 +214,8 @@
   /* Code block copy button */
   .code-block-wrapper {
     position: relative;
+    content-visibility: auto;
+    contain-intrinsic-size: auto 200px;
   }
 
   .code-copy-button {
@@ -261,6 +263,8 @@
     border-radius: 0.5rem;
     border: 1px solid var(--color-border);
     background-color: transparent;
+    content-visibility: auto;
+    contain-intrinsic-size: auto 200px;
   }
 
   .mermaid-block .mermaid {

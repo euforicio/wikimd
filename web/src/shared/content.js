@@ -3,9 +3,9 @@ const OVERLAY_MIN_SCALE = 0.25;
 const OVERLAY_MAX_SCALE = 5;
 const OVERLAY_WHEEL_SENSITIVITY = 0.002;
 
-// Rendering configuration
-const MERMAID_BATCH_SIZE = 3; // Render N diagrams concurrently
-const MERMAID_RENDER_DELAY = 10; // ms between batches to yield to main thread
+// Mermaid rendering queue for sequential processing with main thread yielding
+const mermaidQueue = [];
+let mermaidQueueRunning = false;
 
 let mermaidOverlayRoot = null;
 let mermaidOverlayContent = null;
@@ -19,12 +19,47 @@ let mermaidObserver = null;
 const mermaidOverlayPointerState = new Map();
 const mermaidOverlayTransform = { scale: 1, x: 0, y: 0 };
 let lastPinchDistance = null;
-const pendingMermaidRenders = new Set();
+
+/**
+ * Yield to the main thread to keep input responsive during heavy rendering.
+ * Uses scheduler.postTask (preferred), requestIdleCallback, or setTimeout as fallback.
+ */
+function yieldToMain(timeout = 50) {
+  return new Promise((resolve) => {
+    if (window.scheduler?.postTask) {
+      window.scheduler.postTask(resolve, { priority: "user-visible" });
+    } else if ("requestIdleCallback" in window) {
+      requestIdleCallback(() => resolve(), { timeout });
+    } else {
+      setTimeout(resolve, 0);
+    }
+  });
+}
+
+/**
+ * Clear pending mermaid work when navigating away from a page.
+ * This prevents lag from processing diagrams that are no longer in the DOM.
+ */
+export function clearMermaidQueue() {
+  // Clear the render queue
+  mermaidQueue.length = 0;
+
+  // Disconnect and reset the observer to stop watching old elements
+  if (mermaidObserver) {
+    mermaidObserver.disconnect();
+  }
+
+  // Reset initialization flag so theme is re-checked on next render
+  mermaidInitialized = false;
+}
 
 export function enhanceContent(element) {
   if (!element) {
     return;
   }
+
+  // Clear any pending work from the previous page
+  clearMermaidQueue();
 
   normaliseInternalLinks(element);
   addCopyButtonsToCodeBlocks(element);
@@ -81,10 +116,11 @@ const darkThemeVars = {
 };
 
 /**
- * Initialize mermaid once with current theme settings
+ * Initialize mermaid with current theme settings.
+ * Called before each render session to ensure correct theme.
  */
 function initializeMermaid() {
-  if (!window.mermaid) return;
+  if (!window.mermaid) return false;
 
   const isDark = document.documentElement.classList.contains("dark");
   window.mermaid.initialize({
@@ -93,6 +129,7 @@ function initializeMermaid() {
     themeVariables: isDark ? darkThemeVars : lightThemeVars,
   });
   mermaidInitialized = true;
+  return true;
 }
 
 /**
@@ -100,6 +137,12 @@ function initializeMermaid() {
  */
 async function renderSingleMermaid(el) {
   if (!el || el.dataset.mermaidProcessed === "true") return;
+  if (!window.mermaid) return;
+
+  // Ensure mermaid is initialized with correct theme before rendering
+  if (!mermaidInitialized) {
+    initializeMermaid();
+  }
 
   const mermaidCode = el.textContent.trim();
   if (!mermaidCode) return;
@@ -119,27 +162,48 @@ async function renderSingleMermaid(el) {
 }
 
 /**
- * Render mermaid elements in batches to prevent main thread blocking
+ * Add elements to the mermaid rendering queue and start processing if not already running
  */
-async function renderMermaidBatch(elements) {
-  if (!window.mermaid || elements.length === 0) return;
+function enqueueMermaid(elements) {
+  if (!elements || elements.length === 0) return;
+
+  for (const el of elements) {
+    if (el && el.dataset.mermaidProcessed !== "true" && !mermaidQueue.includes(el)) {
+      mermaidQueue.push(el);
+    }
+  }
+
+  if (!mermaidQueueRunning) {
+    processMermaidQueue();
+  }
+}
+
+/**
+ * Process mermaid queue one diagram at a time, yielding between each render
+ */
+async function processMermaidQueue() {
+  if (mermaidQueueRunning) return;
+  mermaidQueueRunning = true;
 
   if (!mermaidInitialized) {
     initializeMermaid();
   }
 
-  // Process in batches
-  for (let i = 0; i < elements.length; i += MERMAID_BATCH_SIZE) {
-    const batch = elements.slice(i, i + MERMAID_BATCH_SIZE);
+  while (mermaidQueue.length > 0) {
+    const el = mermaidQueue.shift();
 
-    // Render batch concurrently
-    await Promise.all(batch.map(el => renderSingleMermaid(el)));
+    // Skip if element was removed from DOM (page navigated away) or already processed
+    if (el && el.isConnected && el.dataset.mermaidProcessed !== "true") {
+      await renderSingleMermaid(el);
+    }
 
-    // Yield to main thread between batches
-    if (i + MERMAID_BATCH_SIZE < elements.length) {
-      await new Promise(resolve => setTimeout(resolve, MERMAID_RENDER_DELAY));
+    // Yield to main thread between renders to keep input responsive
+    if (mermaidQueue.length > 0) {
+      await yieldToMain();
     }
   }
+
+  mermaidQueueRunning = false;
 }
 
 /**
@@ -156,7 +220,6 @@ function getMermaidObserver() {
         if (entry.isIntersecting) {
           const el = entry.target;
           mermaidObserver.unobserve(el);
-          pendingMermaidRenders.delete(el);
 
           if (el.dataset.mermaidProcessed !== "true") {
             toRender.push(el);
@@ -165,7 +228,7 @@ function getMermaidObserver() {
       }
 
       if (toRender.length > 0) {
-        renderMermaidBatch(toRender);
+        enqueueMermaid(toRender);
       }
     },
     {
@@ -179,9 +242,11 @@ function getMermaidObserver() {
 }
 
 /**
- * Main mermaid rendering function with lazy loading support
+ * Main mermaid rendering function with lazy loading support.
+ * Uses IntersectionObserver for ALL diagrams to avoid layout thrashing
+ * from getBoundingClientRect calls.
  */
-async function renderMermaid(element) {
+function renderMermaid(element) {
   if (!window.mermaid || !element) {
     return;
   }
@@ -197,10 +262,9 @@ async function renderMermaid(element) {
     }
 
     const observer = getMermaidObserver();
-    const immediateRender = [];
-    const deferredRender = [];
 
-    // Categorize diagrams: above-fold vs below-fold
+    // Use IntersectionObserver for all diagrams - it handles viewport
+    // detection without causing layout thrashing
     for (const el of mermaidElements) {
       ensureMermaidContainer(el);
 
@@ -208,27 +272,7 @@ async function renderMermaid(element) {
         continue;
       }
 
-      const rect = el.getBoundingClientRect();
-      const isInViewport = rect.top < window.innerHeight + 200;
-
-      if (isInViewport) {
-        immediateRender.push(el);
-      } else {
-        deferredRender.push(el);
-      }
-    }
-
-    // Render visible diagrams immediately in batches
-    if (immediateRender.length > 0) {
-      await renderMermaidBatch(immediateRender);
-    }
-
-    // Set up lazy loading for below-fold diagrams
-    for (const el of deferredRender) {
-      if (!pendingMermaidRenders.has(el)) {
-        pendingMermaidRenders.add(el);
-        observer.observe(el);
-      }
+      observer.observe(el);
     }
   } catch (err) {
     console.error("mermaid render failed:", err);
@@ -766,7 +810,11 @@ export function reRenderMermaid() {
   // Reset initialization to pick up new theme
   mermaidInitialized = false;
 
+  // Clear the queue to avoid rendering with old theme
+  mermaidQueue.length = 0;
+
   const containers = document.querySelectorAll("[data-mermaid-source]");
+  const toReRender = [];
 
   containers.forEach((container) => {
     const source = container.dataset.mermaidSource;
@@ -778,12 +826,16 @@ export function reRenderMermaid() {
     container.textContent = source;
     container.classList.add("mermaid");
     delete container.dataset.mermaidProcessed;
+    toReRender.push(container);
   });
 
-  // Re-render all diagrams with current theme
-  const pageRegion = document.getElementById("page-region");
-  if (pageRegion) {
-    renderMermaid(pageRegion);
+  // Re-render all diagrams with current theme using the queue
+  if (toReRender.length > 0) {
+    initializeMermaid();
+    const observer = getMermaidObserver();
+    for (const el of toReRender) {
+      observer.observe(el);
+    }
   }
 }
 
@@ -899,62 +951,66 @@ function toHtmlRelative(path) {
   return `${clean}.html`;
 }
 
+// SVG icons for copy button states
+const COPY_ICON_DEFAULT = `
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+</svg>
+<span>Copy</span>`;
+
+const COPY_ICON_SUCCESS = `
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<polyline points="20 6 9 17 4 12"></polyline>
+</svg>
+<span>Copied!</span>`;
+
+// Track whether delegated handler is attached
+let copyHandlerAttached = false;
+
+/**
+ * Bind delegated click handler for code copy buttons.
+ * The wrapper divs and buttons are now rendered server-side, so this function
+ * only needs to attach the event handler for copy functionality.
+ */
 function addCopyButtonsToCodeBlocks(root) {
-  if (!root) {
+  if (!root || copyHandlerAttached) {
     return;
   }
 
-  const codeBlocks = root.querySelectorAll('pre:not(.code-block-wrapper)');
+  // Use event delegation on document for copy button clicks
+  document.addEventListener("click", async (event) => {
+    const button = event.target.closest(".code-copy-button");
+    if (!button) {
+      return;
+    }
 
-  codeBlocks.forEach((pre) => {
-    // Wrap pre in a wrapper div
-    const wrapper = document.createElement('div');
-    wrapper.className = 'code-block-wrapper';
-    pre.parentNode.insertBefore(wrapper, pre);
-    wrapper.appendChild(pre);
+    const wrapper = button.closest(".code-block-wrapper");
+    if (!wrapper) {
+      return;
+    }
 
-    // Create copy button
-    const button = document.createElement('button');
-    button.className = 'code-copy-button';
-    button.innerHTML = `
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-      </svg>
-      <span>Copy</span>
-    `;
-    button.setAttribute('aria-label', 'Copy code to clipboard');
+    const pre = wrapper.querySelector("pre");
+    if (!pre) {
+      return;
+    }
 
-    // Add click handler
-    button.addEventListener('click', async () => {
-      const code = pre.querySelector('code');
-      const text = code ? code.textContent : pre.textContent;
+    const code = pre.querySelector("code");
+    const text = code ? code.textContent : pre.textContent;
 
-      try {
-        await navigator.clipboard.writeText(text);
-        button.classList.add('copied');
-        button.innerHTML = `
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12"></polyline>
-          </svg>
-          <span>Copied!</span>
-        `;
+    try {
+      await navigator.clipboard.writeText(text);
+      button.classList.add("copied");
+      button.innerHTML = COPY_ICON_SUCCESS;
 
-        setTimeout(() => {
-          button.classList.remove('copied');
-          button.innerHTML = `
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-            </svg>
-            <span>Copy</span>
-          `;
-        }, 2000);
-      } catch (err) {
-        console.error('Failed to copy:', err);
-      }
-    });
-
-    wrapper.appendChild(button);
+      setTimeout(() => {
+        button.classList.remove("copied");
+        button.innerHTML = COPY_ICON_DEFAULT;
+      }, 2000);
+    } catch (err) {
+      console.error("Failed to copy:", err);
+    }
   });
+
+  copyHandlerAttached = true;
 }
