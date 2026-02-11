@@ -1,0 +1,39 @@
+# Flowchart with subgraph
+flowchart TB
+    subgraph "Processing"
+        A[Start] --> B{Valid?}
+        B -->|Yes| C[Process]
+        B -->|No| D[Reject]
+    end
+    C --> E[End]
+    D --> E
+
+# Sequence diagram
+sequenceDiagram
+    participant Client
+    participant Server
+    participant Database
+    Client->>Server: Request
+    activate Server
+    Server->>Database: Query
+    Database-->>Server: Result
+    deactivate Server
+    Server-->>Client: Response
+
+# Class diagram
+classDiagram
+    class Animal {
+        +String name
+        +eat()
+    }
+    class Dog {
+        +bark()
+    }
+    Animal <|-- Dog
+
+# State diagram
+stateDiagram-v2
+    [*] --> Idle
+    Idle --> Running: start
+    Running --> Idle: stop
+    Running --> [*]: fail
