@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="mmd-cd3c7d1d" viewBox="0 0 289.0 410.0" width="289.0" height="410.0" role="img">
+<style>
+#mmd-cd3c7d1d .node-text { font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, monospace; font-size: 14.0px; fill: #cdd6f4; dominant-baseline: middle; text-anchor: middle; }
+#mmd-cd3c7d1d .edge-text { font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, monospace; font-size: 12.0px; fill: #a6adc8; dominant-baseline: middle; text-anchor: middle; }
+#mmd-cd3c7d1d .participant-text { font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, monospace; font-size: 14.0px; fill: #cdd6f4; dominant-baseline: middle; text-anchor: middle; font-weight: 500; }
+</style>
+<path d="M 160.0 60.0 L 220.0 50.0 L 123.8 190.0" fill="none" stroke="#6c7086" stroke-width="1.5" marker-end="url(#mmd-cd3c7d1d-arrow-end-1)"/>
+<rect x="234.0" y="42.0" width="43.0" height="16.0" fill="#1e1e2e" rx="3"/>
+<text x="255.5" y="50.0" class="edge-text">first</text>
+<path d="M 160.0 60.0 L 220.0 50.0 L 123.8 190.0" fill="none" stroke="#6c7086" stroke-width="1.5" marker-end="url(#mmd-cd3c7d1d-arrow-end-1)"/>
+<rect x="234.0" y="42.0" width="50.0" height="16.0" fill="#1e1e2e" rx="3"/>
+<text x="259.0" y="50.0" class="edge-text">second</text>
+<path d="M 123.8 190.0 L 220.0 50.0 L 117.3 330.0" fill="none" stroke="#6c7086" stroke-width="1.5" marker-end="url(#mmd-cd3c7d1d-arrow-end-1)"/>
+<g id="node-A">
+  <rect x="40.0" y="50.0" width="120.0" height="40.0" fill="#1e1e2e" stroke="#6c7086" stroke-width="1.5"/>
+  <text x="100.0" y="70.0" class="node-text">A</text>
+</g>
+<g id="node-B">
+  <rect x="50.0" y="190.0" width="120.0" height="40.0" fill="#1e1e2e" stroke="#6c7086" stroke-width="1.5"/>
+  <text x="110.0" y="210.0" class="node-text">B</text>
+</g>
+<g id="node-C">
+  <rect x="50.0" y="330.0" width="120.0" height="40.0" fill="#1e1e2e" stroke="#6c7086" stroke-width="1.5"/>
+  <text x="110.0" y="350.0" class="node-text">C</text>
+</g>
+<defs>
+<marker id="mmd-cd3c7d1d-arrow-end-1" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="strokeWidth">
+  <polygon points="0 0, 10 3.5, 0 7" fill="#6c7086"/>
+</marker>
+</defs>
+</svg>

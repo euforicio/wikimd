@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="mmd-8a48b551" viewBox="0 0 240.0 530.0" width="240.0" height="530.0" role="img">
+<style>
+#mmd-8a48b551 .node-text { font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, monospace; font-size: 14.0px; fill: #cdd6f4; dominant-baseline: middle; text-anchor: middle; }
+#mmd-8a48b551 .edge-text { font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, monospace; font-size: 12.0px; fill: #a6adc8; dominant-baseline: middle; text-anchor: middle; }
+#mmd-8a48b551 .participant-text { font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, monospace; font-size: 14.0px; fill: #cdd6f4; dominant-baseline: middle; text-anchor: middle; font-weight: 500; }
+</style>
+<path d="M 125.0 130.0 L 125.0 230.0" fill="none" stroke="#6c7086" stroke-width="1.5"/>
+<rect x="100.0" y="222.0" width="50.0" height="16.0" fill="#1e1e2e" rx="3"/>
+<text x="125.0" y="230.0" class="edge-text">places</text>
+<text x="140.0" y="122.0" class="edge-text" style="font-size: 11px;">1</text>
+<text x="100.0" y="222.0" class="edge-text" style="font-size: 11px;">0..*</text>
+<path d="M 125.0 310.0 L 125.0 410.0" fill="none" stroke="#6c7086" stroke-width="1.5"/>
+<rect x="93.0" y="402.0" width="64.0" height="16.0" fill="#1e1e2e" rx="3"/>
+<text x="125.0" y="410.0" class="edge-text">contains</text>
+<text x="140.0" y="302.0" class="edge-text" style="font-size: 11px;">1</text>
+<text x="100.0" y="402.0" class="edge-text" style="font-size: 11px;">1..*</text>
+  <rect x="50.0" y="50.0" width="150.0" height="80.0" fill="#1e1e2e" stroke="#6c7086" stroke-width="1.5"/>
+<text x="125.0" y="68.0" class="node-text" style="font-weight: bold;">CUSTOMER</text>
+<line x1="50.0" y1="86.0" x2="200.0" y2="86.0" stroke="#6c7086" stroke-width="1"/>
+  <rect x="50.0" y="230.0" width="150.0" height="80.0" fill="#1e1e2e" stroke="#6c7086" stroke-width="1.5"/>
+<text x="125.0" y="248.0" class="node-text" style="font-weight: bold;">ORDER</text>
+<line x1="50.0" y1="266.0" x2="200.0" y2="266.0" stroke="#6c7086" stroke-width="1"/>
+  <rect x="50.0" y="410.0" width="150.0" height="80.0" fill="#1e1e2e" stroke="#6c7086" stroke-width="1.5"/>
+<text x="125.0" y="428.0" class="node-text" style="font-weight: bold;">LINE_ITEM</text>
+<line x1="50.0" y1="446.0" x2="200.0" y2="446.0" stroke="#6c7086" stroke-width="1"/>
+</svg>

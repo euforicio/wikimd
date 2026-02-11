@@ -1,0 +1,8 @@
+flowchart TB
+    subgraph Processing
+        A[Start] --> B{Valid?}
+        B -->|Yes| C[Process]
+        B -->|No| D[Reject]
+    end
+    C --> E[End]
+    D --> E

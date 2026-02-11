@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="mmd-113f8c7c" viewBox="0 0 360.0 480.0" width="360.0" height="480.0" role="img">
+<style>
+#mmd-113f8c7c .node-text { font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, monospace; font-size: 14.0px; fill: #cdd6f4; dominant-baseline: middle; text-anchor: middle; }
+#mmd-113f8c7c .edge-text { font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, monospace; font-size: 12.0px; fill: #a6adc8; dominant-baseline: middle; text-anchor: middle; }
+#mmd-113f8c7c .participant-text { font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, monospace; font-size: 14.0px; fill: #cdd6f4; dominant-baseline: middle; text-anchor: middle; font-weight: 500; }
+</style>
+<path d="M 180.0 160.0 L 180.0 260.0 L 100.0 260.0 L 100.0 360.0" fill="none" stroke="#6c7086" stroke-width="1.5" marker-end="url(#mmd-113f8c7c-arrow-end-1)"/>
+<path d="M 100.0 400.0 L 100.0 310.0 L 180.0 310.0 L 180.0 220.0" fill="none" stroke="#6c7086" stroke-width="1.5" marker-end="url(#mmd-113f8c7c-arrow-end-1)"/>
+<rect x="158.5" y="302.0" width="43.0" height="16.0" fill="#1e1e2e" rx="3"/>
+<text x="180.0" y="310.0" class="edge-text">start</text>
+<path d="M 180.0 260.0 L 180.0 310.0 L 100.0 310.0 L 100.0 360.0" fill="none" stroke="#6c7086" stroke-width="1.5" marker-end="url(#mmd-113f8c7c-arrow-end-1)"/>
+<rect x="82.0" y="302.0" width="36.0" height="16.0" fill="#1e1e2e" rx="3"/>
+<text x="100.0" y="310.0" class="edge-text">stop</text>
+<path d="M 180.0 260.0 L 180.0 290.0 L 260.0 290.0 L 260.0 320.0" fill="none" stroke="#6c7086" stroke-width="1.5" marker-end="url(#mmd-113f8c7c-arrow-end-1)"/>
+<g id="node-Idle">
+  <rect x="40.0" y="360.0" width="120.0" height="40.0" rx="8.0" fill="#1e1e2e" stroke="#6c7086" stroke-width="1.5"/>
+  <text x="100.0" y="380.0" class="node-text">Idle</text>
+</g>
+<g id="node-Running">
+  <rect x="120.0" y="220.0" width="120.0" height="40.0" rx="8.0" fill="#1e1e2e" stroke="#6c7086" stroke-width="1.5"/>
+  <text x="180.0" y="240.0" class="node-text">Running</text>
+</g>
+<g id="node-[*]_start">
+  <circle cx="180.0" cy="100.0" r="60.0" fill="#6c7086" stroke="#6c7086" stroke-width="1.5"/>
+  <text x="180.0" y="100.0" class="node-text"></text>
+</g>
+<g id="node-[*]_end">
+  <circle cx="260.0" cy="380.0" r="60.0" fill="#1e1e2e" stroke="#6c7086" stroke-width="1.5"/>
+  <circle cx="260.0" cy="380.0" r="56.0" fill="#1e1e2e" stroke="#6c7086" stroke-width="1.5"/>
+  <text x="260.0" y="380.0" class="node-text"></text>
+</g>
+<defs>
+<marker id="mmd-113f8c7c-arrow-end-1" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="strokeWidth">
+  <polygon points="0 0, 10 3.5, 0 7" fill="#6c7086"/>
+</marker>
+</defs>
+</svg>

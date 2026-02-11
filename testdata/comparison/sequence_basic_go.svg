@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="mmd-015d64f5" viewBox="0 0 360.0 240.0" width="360.0" height="240.0" role="img">
+<style>
+#mmd-015d64f5 .node-text { font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, monospace; font-size: 14.0px; fill: #cdd6f4; dominant-baseline: middle; text-anchor: middle; }
+#mmd-015d64f5 .edge-text { font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, monospace; font-size: 12.0px; fill: #a6adc8; dominant-baseline: middle; text-anchor: middle; }
+#mmd-015d64f5 .participant-text { font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, monospace; font-size: 14.0px; fill: #cdd6f4; dominant-baseline: middle; text-anchor: middle; font-weight: 500; }
+</style>
+<g id="participant-Client">
+  <rect x="40.0" y="40.0" width="100.0" height="40.0" rx="4.0" fill="#1e1e2e" stroke="#6c7086" stroke-width="1.5"/>
+  <text x="90.0" y="60.0" class="participant-text">Client</text>
+  <line x1="90.0" y1="80.0" x2="90.0" y2="200.0" stroke="#6c7086" stroke-width="1" stroke-dasharray="4,4"/>
+</g>
+<g id="participant-Server">
+  <rect x="220.0" y="40.0" width="100.0" height="40.0" rx="4.0" fill="#1e1e2e" stroke="#6c7086" stroke-width="1.5"/>
+  <text x="270.0" y="60.0" class="participant-text">Server</text>
+  <line x1="270.0" y1="80.0" x2="270.0" y2="200.0" stroke="#6c7086" stroke-width="1" stroke-dasharray="4,4"/>
+</g>
+<line x1="90.0" y1="110.0" x2="270.0" y2="110.0" stroke="#6c7086" stroke-width="1.5" marker-end="url(#mmd-015d64f5-msg-arrow)"/>
+<text x="180.0" y="102.0" class="edge-text">Request</text>
+<line x1="270.0" y1="150.0" x2="90.0" y2="150.0" stroke="#6c7086" stroke-width="1.5" stroke-dasharray="5,5" marker-end="url(#mmd-015d64f5-msg-arrow)"/>
+<text x="180.0" y="142.0" class="edge-text">Response</text>
+<defs>
+<marker id="mmd-015d64f5-msg-arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="strokeWidth">
+  <polygon points="0 0, 10 3.5, 0 7" fill="#6c7086"/>
+</marker>
+</defs>
+</svg>

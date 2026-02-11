@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="mmd-4a17615c" viewBox="0 0 706.5 215.0" width="706.5" height="215.0" role="img">
+<style>
+#mmd-4a17615c .node-text { font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, monospace; font-size: 14.0px; fill: #cdd6f4; dominant-baseline: middle; text-anchor: middle; }
+#mmd-4a17615c .edge-text { font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, monospace; font-size: 12.0px; fill: #a6adc8; dominant-baseline: middle; text-anchor: middle; }
+#mmd-4a17615c .participant-text { font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, monospace; font-size: 14.0px; fill: #cdd6f4; dominant-baseline: middle; text-anchor: middle; font-weight: 500; }
+</style>
+<path d="M 58.5 155.0 L 58.5 155.0 L 278.5 118.8" fill="none" stroke="#6c7086" stroke-width="1.5" marker-end="url(#mmd-4a17615c-arrow-end-1)"/>
+<path d="M 278.5 118.8 L 58.5 155.0 L 546.5 70.4" fill="none" stroke="#6c7086" stroke-width="1.5" marker-end="url(#mmd-4a17615c-arrow-end-1)"/>
+<rect x="44.0" y="167.0" width="29.0" height="16.0" fill="#1e1e2e" rx="3"/>
+<text x="58.5" y="175.0" class="edge-text">Yes</text>
+<path d="M 278.5 118.8 L 58.5 155.0 L 546.5 150.5" fill="none" stroke="#6c7086" stroke-width="1.5" marker-end="url(#mmd-4a17615c-arrow-end-1)"/>
+<rect x="47.5" y="167.0" width="22.0" height="16.0" fill="#1e1e2e" rx="3"/>
+<text x="58.5" y="175.0" class="edge-text">No</text>
+<g id="node-A">
+  <rect x="58.5" y="135.0" width="120.0" height="40.0" fill="#1e1e2e" stroke="#6c7086" stroke-width="1.5"/>
+  <text x="118.5" y="155.0" class="node-text">Start</text>
+</g>
+<g id="node-B">
+  <polygon points="362.5,77.0 446.5,105.0 362.5,133.0 278.5,105.0" fill="#1e1e2e" stroke="#6c7086" stroke-width="1.5"/>
+  <text x="362.5" y="105.0" class="node-text">Decision</text>
+</g>
+<g id="node-C">
+  <rect x="546.5" y="40.0" width="120.0" height="40.0" fill="#1e1e2e" stroke="#6c7086" stroke-width="1.5"/>
+  <text x="606.5" y="60.0" class="node-text">Done</text>
+</g>
+<g id="node-D">
+  <rect x="546.5" y="130.0" width="120.0" height="40.0" fill="#1e1e2e" stroke="#6c7086" stroke-width="1.5"/>
+  <text x="606.5" y="150.0" class="node-text">Retry</text>
+</g>
+<defs>
+<marker id="mmd-4a17615c-arrow-end-1" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="strokeWidth">
+  <polygon points="0 0, 10 3.5, 0 7" fill="#6c7086"/>
+</marker>
+</defs>
+</svg>

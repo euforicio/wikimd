@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="mmd-32e792c5" viewBox="0 0 279.0 260.0" width="279.0" height="260.0" role="img">
+<style>
+#mmd-32e792c5 .node-text { font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, monospace; font-size: 14.0px; fill: #cdd6f4; dominant-baseline: middle; text-anchor: middle; }
+#mmd-32e792c5 .edge-text { font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, monospace; font-size: 12.0px; fill: #a6adc8; dominant-baseline: middle; text-anchor: middle; }
+#mmd-32e792c5 .participant-text { font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, monospace; font-size: 14.0px; fill: #cdd6f4; dominant-baseline: middle; text-anchor: middle; font-weight: 500; }
+</style>
+<path d="M 160.0 47.8 L 198.0 40.0 L 207.5 40.0 L 217.0 60.0 L 207.5 80.0 L 198.0 80.0 L 160.0 72.2" fill="none" stroke="#6c7086" stroke-width="1.5" marker-end="url(#mmd-32e792c5-arrow-end-1)"/>
+<rect x="231.0" y="52.0" width="36.0" height="16.0" fill="#1e1e2e" rx="3"/>
+<text x="249.0" y="60.0" class="edge-text">self</text>
+<path d="M 160.0 49.7 L 217.0 40.0 L 122.1 180.0" fill="none" stroke="#6c7086" stroke-width="1.5" marker-end="url(#mmd-32e792c5-arrow-end-1)"/>
+<g id="node-A">
+  <rect x="40.0" y="40.0" width="120.0" height="40.0" fill="#1e1e2e" stroke="#6c7086" stroke-width="1.5"/>
+  <text x="100.0" y="60.0" class="node-text">Node A</text>
+</g>
+<g id="node-B">
+  <rect x="48.5" y="180.0" width="120.0" height="40.0" fill="#1e1e2e" stroke="#6c7086" stroke-width="1.5"/>
+  <text x="108.5" y="200.0" class="node-text">B</text>
+</g>
+<defs>
+<marker id="mmd-32e792c5-arrow-end-1" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="strokeWidth">
+  <polygon points="0 0, 10 3.5, 0 7" fill="#6c7086"/>
+</marker>
+</defs>
+</svg>

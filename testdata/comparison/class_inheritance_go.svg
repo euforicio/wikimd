@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="mmd-66032a58" viewBox="0 0 200.0 220.0" width="200.0" height="220.0" role="img">
+<style>
+#mmd-66032a58 .node-text { font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, monospace; font-size: 14.0px; fill: #cdd6f4; dominant-baseline: middle; text-anchor: middle; }
+#mmd-66032a58 .edge-text { font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, monospace; font-size: 12.0px; fill: #a6adc8; dominant-baseline: middle; text-anchor: middle; }
+#mmd-66032a58 .participant-text { font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, monospace; font-size: 14.0px; fill: #cdd6f4; dominant-baseline: middle; text-anchor: middle; font-weight: 500; }
+</style>
+<path d="M 100.0 80.0 L 100.0 140.0" fill="none" stroke="#6c7086" stroke-width="1.5" marker-end="url(#mmd-66032a58-arrow-end-1)"/>
+  <rect x="40.0" y="40.0" width="120.0" height="40.0" rx="2.0" fill="#1e1e2e" stroke="#6c7086" stroke-width="1.5"/>
+<text x="100.0" y="58.0" class="node-text" style="font-weight: bold;">Animal</text>
+<line x1="40.0" y1="76.0" x2="160.0" y2="76.0" stroke="#6c7086" stroke-width="1"/>
+<text x="48.0" y="94.0" class="node-text" style="text-anchor: start; font-size: 12px;">+name: String</text>
+<line x1="40.0" y1="112.0" x2="160.0" y2="112.0" stroke="#6c7086" stroke-width="1"/>
+<text x="48.0" y="117.0" class="node-text" style="text-anchor: start; font-size: 12px;">+eat()()</text>
+  <rect x="40.0" y="140.0" width="120.0" height="40.0" rx="2.0" fill="#1e1e2e" stroke="#6c7086" stroke-width="1.5"/>
+<text x="100.0" y="158.0" class="node-text" style="font-weight: bold;">Dog</text>
+<line x1="40.0" y1="176.0" x2="160.0" y2="176.0" stroke="#6c7086" stroke-width="1"/>
+<line x1="40.0" y1="194.0" x2="160.0" y2="194.0" stroke="#6c7086" stroke-width="1"/>
+<text x="48.0" y="199.0" class="node-text" style="text-anchor: start; font-size: 12px;">+bark()()</text>
+<defs>
+<marker id="mmd-66032a58-arrow-end-1" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="strokeWidth">
+  <polygon points="0 0, 10 3.5, 0 7" fill="#6c7086"/>
+</marker>
+</defs>
+</svg>
