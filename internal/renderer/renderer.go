@@ -2,6 +2,7 @@
 package renderer
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"fmt"
@@ -23,6 +24,7 @@ import (
 	"github.com/yuin/goldmark/text"
 	"github.com/yuin/goldmark/util"
 	"go.abhg.dev/goldmark/anchor"
+	"gopkg.in/yaml.v2"
 
 	d2renderer "github.com/euforicio/wikimd/internal/renderer/d2"
 	"github.com/euforicio/wikimd/internal/renderer/transform"
@@ -271,6 +273,22 @@ func (s *Service) Invalidate(path string) {
 	s.cache.Delete(cacheKey(path))
 }
 
+// ExtractMetadata parses frontmatter without rendering the document body.
+// Startup tree construction uses this path so broken diagrams do not block server boot.
+func ExtractMetadata(content []byte) Metadata {
+	frontmatter, ok := extractFrontmatter(content)
+	if !ok {
+		return Metadata{}
+	}
+
+	raw := make(map[string]any)
+	if err := yaml.Unmarshal(frontmatter, &raw); err != nil {
+		return Metadata{}
+	}
+
+	return metadataFromRaw(raw)
+}
+
 func extractMetadata(ctx parser.Context) Metadata {
 	raw := goldmarkmeta.Get(ctx)
 	var meta Metadata
@@ -278,7 +296,44 @@ func extractMetadata(ctx parser.Context) Metadata {
 		return meta
 	}
 
-	meta.Raw = make(map[string]any)
+	return metadataFromRaw(raw)
+}
+
+func extractFrontmatter(content []byte) ([]byte, bool) {
+	content = bytes.TrimPrefix(content, []byte{0xEF, 0xBB, 0xBF})
+
+	scanner := bufio.NewScanner(bytes.NewReader(content))
+	if !scanner.Scan() {
+		return nil, false
+	}
+	if strings.TrimSpace(scanner.Text()) != "---" {
+		return nil, false
+	}
+
+	var body strings.Builder
+	for scanner.Scan() {
+		line := scanner.Text()
+		trimmed := strings.TrimSpace(line)
+		if trimmed == "---" || trimmed == "..." {
+			return []byte(body.String()), true
+		}
+		if body.Len() > 0 {
+			body.WriteByte('\n')
+		}
+		body.WriteString(line)
+	}
+
+	return nil, false
+}
+
+func metadataFromRaw(raw map[string]any) Metadata {
+	if raw == nil {
+		return Metadata{}
+	}
+
+	meta := Metadata{
+		Raw: make(map[string]any),
+	}
 	for k, v := range raw {
 		meta.Raw[k] = v
 		switch k {

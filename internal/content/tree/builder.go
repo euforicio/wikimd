@@ -214,19 +214,12 @@ func (b *builder) buildFileNode(ctx context.Context, absPath, relPath string, in
 
 	var meta *renderer.Metadata
 	title := display
-	if b.opts.Renderer != nil {
-		// Pass wiki-relative path (not absolute filesystem path) to renderer
-		doc, err := b.opts.Renderer.Render(ctx, rel, info.ModTime(), content)
-		if err != nil {
-			return nil, fmt.Errorf("render metadata for %s: %w", rel, err)
-		}
-		metadata := doc.Metadata
-		if !metadata.IsZero() {
-			metaCopy := metadata
-			meta = &metaCopy
-			if metadata.Title != "" {
-				title = metadata.Title
-			}
+	metadata := renderer.ExtractMetadata(content)
+	if !metadata.IsZero() {
+		metaCopy := metadata
+		meta = &metaCopy
+		if metadata.Title != "" {
+			title = metadata.Title
 		}
 	}
 

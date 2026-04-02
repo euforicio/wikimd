@@ -167,3 +167,54 @@ func TestDependencyDirectoriesExcluded(t *testing.T) {
 		}
 	}
 }
+
+func TestBuildExtractsMetadataWithoutRendererEvenWithBrokenMermaid(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	content := `---
+title: Broken Mermaid Page
+description: Startup should not fail on Mermaid issues
+tags:
+  - docs
+  - mermaid
+---
+
+# Broken Mermaid
+
+` + "```mermaid\n" + `this is not valid mermaid
+` + "```" + `
+`
+	if err := os.WriteFile(filepath.Join(root, "broken.md"), []byte(content), 0o644); err != nil {
+		t.Fatalf("write broken.md: %v", err)
+	}
+
+	node, err := tree.Build(context.Background(), root, tree.Options{})
+	if err != nil {
+		t.Fatalf("Build returned error: %v", err)
+	}
+
+	if node == nil {
+		t.Fatalf("expected root node")
+	}
+	if len(node.Children) != 1 {
+		t.Fatalf("expected 1 child, got %d", len(node.Children))
+	}
+
+	page := node.Children[0]
+	if page.Type != tree.NodeTypeFile {
+		t.Fatalf("expected file node, got %s", page.Type)
+	}
+	if page.Title != "Broken Mermaid Page" {
+		t.Fatalf("expected title from frontmatter, got %q", page.Title)
+	}
+	if page.Metadata == nil {
+		t.Fatalf("expected metadata to be populated")
+	}
+	if page.Metadata.Description != "Startup should not fail on Mermaid issues" {
+		t.Fatalf("unexpected description: %q", page.Metadata.Description)
+	}
+	if len(page.Metadata.Tags) != 2 || page.Metadata.Tags[0] != "docs" || page.Metadata.Tags[1] != "mermaid" {
+		t.Fatalf("unexpected tags: %#v", page.Metadata.Tags)
+	}
+}
